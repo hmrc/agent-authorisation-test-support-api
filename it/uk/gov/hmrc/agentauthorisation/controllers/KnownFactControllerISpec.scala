@@ -40,6 +40,28 @@ class KnownFactControllerISpec extends BaseISpec {
       (jsonBodyOf(result) \ "knownFact").as[String] shouldBe "WV34 8JW"
 
     }
+
+    "return 500 when the known fact is missing for VAT service" in {
+
+      givenAuditConnector()
+      givenSignedIdToStubs()
+      givenUserCreationInStubsSucceeds()
+      givenVatCustomerInformationExistsNoKF(vrn)
+
+      val result = await(controller.prepareMtdVatKnownFact(Vrn(vrn))(FakeRequest()))
+      status(result) shouldBe 500
+    }
+
+    "return 500 when the known fact is missing for ITSA service" in {
+
+      givenAuditConnector()
+      givenSignedIdToStubs()
+      givenUserCreationInStubsSucceeds()
+      givenBusinessDetailsExistsNoKF(nino)
+
+      val result = await(controller.prepareMtdItKnownFact(Nino(nino))(FakeRequest()))
+      status(result) shouldBe 500
+    }
   }
 
   def givenSignedIdToStubs() =
@@ -69,6 +91,23 @@ class KnownFactControllerISpec extends BaseISpec {
                                                             |}
            """.stripMargin)))
 
+  def givenVatCustomerInformationExistsNoKF(vrn: String) =
+    stubFor(
+      get(urlPathEqualTo(s"/vat/customer/vrn/$vrn/information"))
+        .willReturn(aResponse().withStatus(200).withBody(s"""
+                                                            |{
+                                                            |  "vrn" : "$vrn",
+                                                            |  "approvedInformation" : {
+                                                            |    "customerDetails" : {
+                                                            |      "tradingName" : "Conto-Dom Inc.",
+                                                            |      "mandationStatus" : "4",
+                                                            |      "registrationReason" : "0006",
+                                                            |      "businessStartDate" : "1990-09-28"
+                                                            |    }
+                                                            |  }
+                                                            |}
+           """.stripMargin)))
+
   def givenBusinessDetailsExists(nino: String) =
     stubFor(
       get(urlPathEqualTo(s"/registration/business-details/nino/$nino"))
@@ -86,6 +125,28 @@ class KnownFactControllerISpec extends BaseISpec {
                                                             |      "addressLine3" : "Aberdeen",
                                                             |      "addressLine4" : "AB45 0CJ",
                                                             |      "postalCode" : "WV34 8JW",
+                                                            |      "countryCode" : "GB"
+                                                            |    }
+                                                            |  }]
+                                                            |}
+           """.stripMargin)))
+
+  def givenBusinessDetailsExistsNoKF(nino: String) =
+    stubFor(
+      get(urlPathEqualTo(s"/registration/business-details/nino/$nino"))
+        .willReturn(aResponse().withStatus(200).withBody(s"""
+                                                            |{
+                                                            |  "safeId" : "XW0007448578742",
+                                                            |  "nino" : "AB104897B",
+                                                            |  "mtdbsa" : "WVNQ79994005359",
+                                                            |  "propertyIncome" : true,
+                                                            |  "businessData" : [ {
+                                                            |    "tradingName" : "Royal Bergentronic Group",
+                                                            |    "businessAddressDetails" : {
+                                                            |      "addressLine1" : "85 Thurlby Way",
+                                                            |      "addressLine2" : "The Knight House",
+                                                            |      "addressLine3" : "Aberdeen",
+                                                            |      "addressLine4" : "AB45 0CJ",
                                                             |      "countryCode" : "GB"
                                                             |    }
                                                             |  }]
