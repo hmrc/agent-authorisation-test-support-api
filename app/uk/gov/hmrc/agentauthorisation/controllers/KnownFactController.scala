@@ -27,13 +27,12 @@ import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.Authorization
-import uk.gov.hmrc.play.bootstrap.controller.Utf8MimeTypes
 
 import scala.concurrent.ExecutionContext
 
 @Singleton
 class KnownFactController @Inject()(stubsConnector: AgentsExternalStubsConnector, ecp: Provider[ExecutionContext])
-    extends Controller with Utf8MimeTypes {
+    extends Controller {
 
   implicit val ec: ExecutionContext = ecp.get
 
