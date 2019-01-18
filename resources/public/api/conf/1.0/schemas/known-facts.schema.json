@@ -3,6 +3,7 @@
   "description": "Known fact matching client's data for the purpose of agent authorisation request",
   "required": [
     "service",
+    "clientType",
     "clientIdType",
     "clientId",
     "knownFact"
@@ -14,6 +15,9 @@
       "properties": {
         "service": {
           "const": ["MTD-VAT"]
+        },
+        "clientType": {
+          "enum": ["personal","business"]
         },
         "clientIdType": {
           "const": "vrn"
@@ -36,6 +40,9 @@
       "properties": {
         "service": {
           "const": ["MTD-IT"]
+        },
+        "clientType": {
+          "const": "personal"
         },
         "clientIdType": {
           "const": "ni"

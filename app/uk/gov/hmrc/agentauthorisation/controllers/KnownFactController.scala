@@ -18,28 +18,78 @@ package uk.gov.hmrc.agentauthorisation.controllers
 
 import com.google.inject.Provider
 import javax.inject.{Inject, Singleton}
-import play.api.mvc.{Action, AnyContent}
+import play.api.libs.json.{Format, Json}
+import play.api.mvc.{Action, AnyContent, Controller}
 import uk.gov.hmrc.agentauthorisation.connectors.AgentsExternalStubsConnector
+import uk.gov.hmrc.agentauthorisation.models.User
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.Authorization
+import uk.gov.hmrc.play.bootstrap.controller.Utf8MimeTypes
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class KnownFactController @Inject()(stubsConnector: AgentsExternalStubsConnector, ecp: Provider[ExecutionContext])
-    extends BaseController {
+    extends Controller with Utf8MimeTypes {
 
   implicit val ec: ExecutionContext = ecp.get
 
+  import KnownFactController._
+
   def prepareMtdVatKnownFact(vrn: Vrn): Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok)
+    val user = User(
+      affinityGroup = "Organisation",
+      principalEnrolments =
+        Seq(Enrolment("HMRC-MTD-VAT", Seq(EnrolmentIdentifier("VRN", vrn.value)), "Activated", None)))
+    for {
+      authorizationToken <- stubsConnector.signIn(HeaderCarrier(), ec)
+      hc = HeaderCarrier(authorization = Some(Authorization(authorizationToken)))
+      _                      <- stubsConnector.createUser(user)(hc, ec)
+      vatCustomerInformation <- stubsConnector.getVatCustomerInformation(vrn)(hc, ec)
+    } yield
+      vatCustomerInformation.flatMap(_.effectiveRegistrationDate) match {
+        case Some(date) =>
+          Ok(Json.toJson(KnownFactResponse(Seq("MTD-VAT"), "business", "vrn", vrn.value, date.toString("yyyy-MM-dd"))))
+        case None => InternalServerError("Missing VAT Registration Date verifier")
+      }
   }
 
   def prepareMtdItKnownFact(nino: Nino): Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok)
+    val user =
+      User(
+        affinityGroup = "Individual",
+        nino = Some(nino),
+        confidenceLevel = Some(200),
+        principalEnrolments = Seq(Enrolment("HMRC-MTD-IT")))
+    for {
+      authorizationToken <- stubsConnector.signIn(HeaderCarrier(), ec)
+      hc = HeaderCarrier(authorization = Some(Authorization(authorizationToken)))
+      _               <- stubsConnector.createUser(user)(hc, ec)
+      businessDetails <- stubsConnector.getBusinessDetails(nino)(hc, ec)
+    } yield
+      businessDetails.flatMap(_.businessData.headOption.flatMap(_.businessAddressDetails.postalCode)) match {
+        case Some(postcode) =>
+          Ok(Json.toJson(KnownFactResponse(Seq("MTD-IT"), "personal", "nino", nino.value, postcode)))
+        case None => InternalServerError("Missing business postcode verifier")
+      }
   }
 
 }
 
-object KnownFactController {}
+object KnownFactController {
+
+  case class KnownFactResponse(
+    service: Seq[String],
+    clientType: String,
+    clientIdType: String,
+    clientId: String,
+    knownFact: String)
+
+  object KnownFactResponse {
+    implicit val formats: Format[KnownFactResponse] = Json.format[KnownFactResponse]
+  }
+
+}
