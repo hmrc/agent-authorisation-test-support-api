@@ -33,7 +33,7 @@ class ApiPlatformRequestHandler @Inject()(
   filters: HttpFilters)
     extends DefaultHttpRequestHandler(router, errorHandler, configuration, filters) {
 
-  val context = "/agents"
+  val context = "/agent-authorisation-test-support"
   val health = "/ping"
   val api = "/api"
 

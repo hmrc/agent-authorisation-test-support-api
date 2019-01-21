@@ -23,10 +23,9 @@ import play.api.mvc.{Action, AnyContent, Controller}
 import uk.gov.hmrc.agentauthorisation.connectors.AgentsExternalStubsConnector
 import uk.gov.hmrc.agentauthorisation.models.User
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
-import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.Authorization
+import uk.gov.hmrc.http.logging.{Authorization, SessionId}
 
 import scala.concurrent.ExecutionContext
 
@@ -41,11 +40,12 @@ class KnownFactController @Inject()(stubsConnector: AgentsExternalStubsConnector
   def prepareMtdVatKnownFact(vrn: Vrn): Action[AnyContent] = Action.async { implicit request =>
     val user = User(
       affinityGroup = "Organisation",
-      principalEnrolments =
-        Seq(Enrolment("HMRC-MTD-VAT", Seq(EnrolmentIdentifier("VRN", vrn.value)), "Activated", None)))
+      principalEnrolments = Seq(User.Enrolment("HMRC-MTD-VAT", Some(Seq(User.Identifier("VRN", vrn.value))))))
     for {
-      authorizationToken <- stubsConnector.signIn(HeaderCarrier(), ec)
-      hc = HeaderCarrier(authorization = Some(Authorization(authorizationToken)))
+      (authorizationToken, sessionId) <- stubsConnector.signIn(HeaderCarrier(), ec)
+      hc = HeaderCarrier(
+        authorization = Some(Authorization(authorizationToken)),
+        sessionId = Some(SessionId(sessionId)))
       _                      <- stubsConnector.createUser(user)(hc, ec)
       vatCustomerInformation <- stubsConnector.getVatCustomerInformation(vrn)(hc, ec)
     } yield
@@ -62,10 +62,12 @@ class KnownFactController @Inject()(stubsConnector: AgentsExternalStubsConnector
         affinityGroup = "Individual",
         nino = Some(nino),
         confidenceLevel = Some(200),
-        principalEnrolments = Seq(Enrolment("HMRC-MTD-IT")))
+        principalEnrolments = Seq(User.Enrolment("HMRC-MTD-IT")))
     for {
-      authorizationToken <- stubsConnector.signIn(HeaderCarrier(), ec)
-      hc = HeaderCarrier(authorization = Some(Authorization(authorizationToken)))
+      (authorizationToken, sessionId) <- stubsConnector.signIn(HeaderCarrier(), ec)
+      hc = HeaderCarrier(
+        authorization = Some(Authorization(authorizationToken)),
+        sessionId = Some(SessionId(sessionId)))
       _               <- stubsConnector.createUser(user)(hc, ec)
       businessDetails <- stubsConnector.getBusinessDetails(nino)(hc, ec)
     } yield

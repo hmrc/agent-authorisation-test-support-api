@@ -42,16 +42,26 @@ class AgentsExternalStubsConnector @Inject()(
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def signIn(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
+  def signIn(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[(String, String)] =
     http
       .POST[JsObject, HttpResponse](s"$baseUrl/agents-external-stubs/sign-in", Json.obj("planetId" -> "HMRC"))
-      .map(response =>
-        response.header(HeaderNames.AUTHORIZATION).getOrElse(throw new Exception("Missing Authorization token")))
+      .map(
+        response =>
+          (
+            response
+              .header(HeaderNames.AUTHORIZATION)
+              .getOrElse(throw new Exception("Missing Authorization token")),
+            response.header("X-Session-ID").getOrElse(throw new Exception("Missing X-Session-ID token"))
+        )
+      )
 
-  def createUser(user: User)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
+  def createUser(user: User)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
     http
       .POST[User, HttpResponse](s"$baseUrl/agents-external-stubs/users", user)
-      .map(response => response.header(HeaderNames.LOCATION).getOrElse(throw new Exception("Missing Location header")))
+      .map(_ => ())
+      .recover {
+        case e: Upstream4xxResponse if e.upstreamResponseCode == 409 => ()
+      }
 
   def getBusinessDetails(
     nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[BusinessDetails]] =

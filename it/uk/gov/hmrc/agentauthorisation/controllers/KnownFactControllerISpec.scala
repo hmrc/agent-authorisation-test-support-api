@@ -1,6 +1,6 @@
 package uk.gov.hmrc.agentauthorisation.controllers
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, post, stubFor, urlPathEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, post, stubFor, urlPathEqualTo}
 import play.api.test.FakeRequest
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.agentauthorisation.support.BaseISpec
@@ -41,6 +41,32 @@ class KnownFactControllerISpec extends BaseISpec {
 
     }
 
+    "return MTD-IT known fact when user already exists" in {
+
+      givenAuditConnector()
+      givenSignedIdToStubs()
+      givenUserCreationInStubsReturnConflict()
+      givenBusinessDetailsExists(nino)
+
+      val result = await(controller.prepareMtdItKnownFact(Nino(nino))(FakeRequest()))
+      status(result) shouldBe 200
+
+      (jsonBodyOf(result) \ "knownFact").as[String] shouldBe "WV34 8JW"
+
+    }
+
+    "return MTD-VAT known fact when user already exists" in {
+
+      givenAuditConnector()
+      givenSignedIdToStubs()
+      givenUserCreationInStubsReturnConflict()
+      givenVatCustomerInformationExists(vrn)
+
+      val result = await(controller.prepareMtdVatKnownFact(Vrn(vrn))(FakeRequest()))
+      status(result) shouldBe 200
+
+    }
+
     "return 500 when the known fact is missing for VAT service" in {
 
       givenAuditConnector()
@@ -67,15 +93,25 @@ class KnownFactControllerISpec extends BaseISpec {
   def givenSignedIdToStubs() =
     stubFor(
       post(urlPathEqualTo("/agents-external-stubs/sign-in"))
-        .willReturn(aResponse().withStatus(201).withHeader(HeaderNames.AUTHORIZATION, "Bearer 1234567890")))
+        .willReturn(
+          aResponse()
+            .withStatus(201)
+            .withHeader(HeaderNames.AUTHORIZATION, "Bearer 1234567890")
+            .withHeader("X-Session-ID", "1234567890")))
 
   def givenUserCreationInStubsSucceeds() =
     stubFor(post(urlPathEqualTo("/agents-external-stubs/users"))
       .willReturn(aResponse().withStatus(201).withHeader(HeaderNames.LOCATION, "/agents-external-stubs/users/abc123")))
 
+  def givenUserCreationInStubsReturnConflict() =
+    stubFor(
+      post(urlPathEqualTo("/agents-external-stubs/users"))
+        .willReturn(aResponse().withStatus(409)))
+
   def givenVatCustomerInformationExists(vrn: String) =
     stubFor(
       get(urlPathEqualTo(s"/vat/customer/vrn/$vrn/information"))
+        .withHeader("X-Session-ID", equalTo("1234567890"))
         .willReturn(aResponse().withStatus(200).withBody(s"""
                                                             |{
                                                             |  "vrn" : "$vrn",
@@ -94,6 +130,7 @@ class KnownFactControllerISpec extends BaseISpec {
   def givenVatCustomerInformationExistsNoKF(vrn: String) =
     stubFor(
       get(urlPathEqualTo(s"/vat/customer/vrn/$vrn/information"))
+        .withHeader("X-Session-ID", equalTo("1234567890"))
         .willReturn(aResponse().withStatus(200).withBody(s"""
                                                             |{
                                                             |  "vrn" : "$vrn",
@@ -111,6 +148,7 @@ class KnownFactControllerISpec extends BaseISpec {
   def givenBusinessDetailsExists(nino: String) =
     stubFor(
       get(urlPathEqualTo(s"/registration/business-details/nino/$nino"))
+        .withHeader("X-Session-ID", equalTo("1234567890"))
         .willReturn(aResponse().withStatus(200).withBody(s"""
                                                             |{
                                                             |  "safeId" : "XW0007448578742",
@@ -134,6 +172,7 @@ class KnownFactControllerISpec extends BaseISpec {
   def givenBusinessDetailsExistsNoKF(nino: String) =
     stubFor(
       get(urlPathEqualTo(s"/registration/business-details/nino/$nino"))
+        .withHeader("X-Session-ID", equalTo("1234567890"))
         .willReturn(aResponse().withStatus(200).withBody(s"""
                                                             |{
                                                             |  "safeId" : "XW0007448578742",
