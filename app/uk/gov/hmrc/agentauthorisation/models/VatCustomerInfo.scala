@@ -25,7 +25,9 @@ object VatCustomerInfo {
     (__ \ "approvedInformation").readNullable[JsObject].map {
       case Some(approvedInformation) =>
         val maybeDate =
-          (approvedInformation \ "customerDetails" \ "effectiveRegistrationDate").asOpt[String].map(LocalDate.parse)
+          (approvedInformation \ "customerDetails" \ "effectiveRegistrationDate")
+            .asOpt[String]
+            .map(LocalDate.parse)
         VatCustomerInfo(maybeDate)
       case None =>
         VatCustomerInfo(None)

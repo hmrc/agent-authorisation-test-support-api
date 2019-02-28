@@ -36,7 +36,8 @@ class PlatformIntegrationSpec
     extends UnitSpec with GuiceOneAppPerTest with MockitoSugar with ScalaFutures with BeforeAndAfterEach {
 
   val stubHost = "localhost"
-  val stubPort = sys.env.getOrElse("WIREMOCK_SERVICE_LOCATOR_PORT", "11112").toInt
+  val stubPort =
+    sys.env.getOrElse("WIREMOCK_SERVICE_LOCATOR_PORT", "11112").toInt
   val wireMockServer = new WireMockServer(wireMockConfig().port(stubPort))
 
   override def newAppForTest(testData: TestData): Application =
@@ -55,12 +56,16 @@ class PlatformIntegrationSpec
   override def beforeEach() {
     wireMockServer.start()
     WireMock.configureFor(stubHost, stubPort)
-    stubFor(post(urlMatching("/registration")).willReturn(aResponse().withStatus(NO_CONTENT)))
+    stubFor(
+      post(urlMatching("/registration"))
+        .willReturn(aResponse().withStatus(NO_CONTENT)))
   }
 
   trait Setup {
-    implicit def mat: akka.stream.Materializer = app.injector.instanceOf[akka.stream.Materializer]
-    val documentationController = app.injector.instanceOf[DocumentationController]
+    implicit def mat: akka.stream.Materializer =
+      app.injector.instanceOf[akka.stream.Materializer]
+    val documentationController =
+      app.injector.instanceOf[DocumentationController]
     val ramlController = app.injector.instanceOf[RamlController]
     val request = FakeRequest()
   }
@@ -69,7 +74,9 @@ class PlatformIntegrationSpec
 
     "register itself to service-locator" in new Setup {
       def regPayloadStringFor(serviceName: String, serviceUrl: String): String =
-        Json.toJson(Registration(serviceName, serviceUrl, Some(Map("third-party-api" -> "true")))).toString
+        Json
+          .toJson(Registration(serviceName, serviceUrl, Some(Map("third-party-api" -> "true"))))
+          .toString
 
       verify(
         1,
@@ -80,11 +87,13 @@ class PlatformIntegrationSpec
     }
 
     "provide definition endpoint and documentation endpoint for each api" in new Setup {
-      def normalizeEndpointName(endpointName: String): String = endpointName.replaceAll(" ", "-")
+      def normalizeEndpointName(endpointName: String): String =
+        endpointName.replaceAll(" ", "-")
 
       def verifyDocumentationPresent(version: String, endpointName: String) {
         withClue(s"Getting documentation version '$version' of endpoint '$endpointName'") {
-          val documentationResult = documentationController.documentation(version, endpointName)(request)
+          val documentationResult =
+            documentationController.documentation(version, endpointName)(request)
           status(documentationResult) shouldBe OK
         }
       }
@@ -96,14 +105,20 @@ class PlatformIntegrationSpec
 
       val versions: Seq[String] = (jsonResponse \\ "version") map (_.as[String])
       val endpointNames: Seq[Seq[String]] =
-        (jsonResponse \\ "endpoints").map(_ \\ "endpointName").map(_.map(_.as[String]))
+        (jsonResponse \\ "endpoints")
+          .map(_ \\ "endpointName")
+          .map(_.map(_.as[String]))
 
       versions
         .zip(endpointNames)
         .flatMap {
-          case (version, endpoint) => endpoint.map(endpointName => (version, endpointName))
+          case (version, endpoint) =>
+            endpoint.map(endpointName => (version, endpointName))
         }
-        .foreach { case (version, endpointName) => verifyDocumentationPresent(version, endpointName) }
+        .foreach {
+          case (version, endpointName) =>
+            verifyDocumentationPresent(version, endpointName)
+        }
     }
 
     "provide raml documentation" in new Setup {

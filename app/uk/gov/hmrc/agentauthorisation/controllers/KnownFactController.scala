@@ -38,21 +38,25 @@ class KnownFactController @Inject()(stubsConnector: AgentsExternalStubsConnector
   import KnownFactController._
 
   def prepareMtdVatKnownFact(vrn: Vrn): Action[AnyContent] = Action.async { implicit request =>
-    val user = User(
-      affinityGroup = "Organisation",
-      principalEnrolments = Seq(User.Enrolment("HMRC-MTD-VAT", Some(Seq(User.Identifier("VRN", vrn.value))))))
+    val user =
+      User(
+        affinityGroup = "Organisation",
+        principalEnrolments = Seq(User.Enrolment("HMRC-MTD-VAT", Some(Seq(User.Identifier("VRN", vrn.value))))))
     for {
-      (authorizationToken, sessionId) <- stubsConnector.signIn(HeaderCarrier(), ec)
+      (authorizationToken, sessionId) <- stubsConnector
+                                          .signIn(HeaderCarrier(), ec)
       hc = HeaderCarrier(
         authorization = Some(Authorization(authorizationToken)),
         sessionId = Some(SessionId(sessionId)))
-      _                      <- stubsConnector.createUser(user)(hc, ec)
-      vatCustomerInformation <- stubsConnector.getVatCustomerInformation(vrn)(hc, ec)
+      _ <- stubsConnector.createUser(user)(hc, ec)
+      vatCustomerInformation <- stubsConnector
+                                 .getVatCustomerInformation(vrn)(hc, ec)
     } yield
       vatCustomerInformation.flatMap(_.effectiveRegistrationDate) match {
         case Some(date) =>
           Ok(Json.toJson(KnownFactResponse(Seq("MTD-VAT"), "business", "vrn", vrn.value, date.toString("yyyy-MM-dd"))))
-        case None => InternalServerError("Missing VAT Registration Date verifier")
+        case None =>
+          InternalServerError("Missing VAT Registration Date verifier")
       }
   }
 
@@ -64,14 +68,17 @@ class KnownFactController @Inject()(stubsConnector: AgentsExternalStubsConnector
         confidenceLevel = Some(200),
         principalEnrolments = Seq(User.Enrolment("HMRC-MTD-IT")))
     for {
-      (authorizationToken, sessionId) <- stubsConnector.signIn(HeaderCarrier(), ec)
+      (authorizationToken, sessionId) <- stubsConnector
+                                          .signIn(HeaderCarrier(), ec)
       hc = HeaderCarrier(
         authorization = Some(Authorization(authorizationToken)),
         sessionId = Some(SessionId(sessionId)))
       _               <- stubsConnector.createUser(user)(hc, ec)
       businessDetails <- stubsConnector.getBusinessDetails(nino)(hc, ec)
     } yield
-      businessDetails.flatMap(_.businessData.headOption.flatMap(_.businessAddressDetails.postalCode)) match {
+      businessDetails.flatMap(
+        _.businessData.headOption
+          .flatMap(_.businessAddressDetails.postalCode)) match {
         case Some(postcode) =>
           Ok(Json.toJson(KnownFactResponse(Seq("MTD-IT"), "personal", "nino", nino.value, postcode)))
         case None => InternalServerError("Missing business postcode verifier")
@@ -90,7 +97,8 @@ object KnownFactController {
     knownFact: String)
 
   object KnownFactResponse {
-    implicit val formats: Format[KnownFactResponse] = Json.format[KnownFactResponse]
+    implicit val formats: Format[KnownFactResponse] =
+      Json.format[KnownFactResponse]
   }
 
 }

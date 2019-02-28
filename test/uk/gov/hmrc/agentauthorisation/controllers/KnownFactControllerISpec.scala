@@ -25,12 +25,14 @@ import uk.gov.hmrc.domain.Nino
 
 class KnownFactControllerISpec extends BaseISpec {
 
-  lazy val controller: KnownFactController = app.injector.instanceOf[KnownFactController]
+  lazy val controller: KnownFactController =
+    app.injector.instanceOf[KnownFactController]
 
   val vrn = "703850256"
   val nino = "AB104897B"
 
-  val fakeRequest = FakeRequest().withHeaders("Accept" -> s"application/vnd.hmrc.1.0+json")
+  val fakeRequest =
+    FakeRequest().withHeaders("Accept" -> s"application/vnd.hmrc.1.0+json")
 
   "KnownFactController" should {
     "return MTD-VAT known fact" in {
@@ -40,7 +42,8 @@ class KnownFactControllerISpec extends BaseISpec {
       givenUserCreationInStubsSucceeds()
       givenVatCustomerInformationExists(vrn)
 
-      val result = await(controller.prepareMtdVatKnownFact(Vrn(vrn))(fakeRequest))
+      val result =
+        await(controller.prepareMtdVatKnownFact(Vrn(vrn))(fakeRequest))
       status(result) shouldBe 200
       (jsonBodyOf(result) \ "knownFact").as[String] shouldBe "2017-11-09"
     }
@@ -52,7 +55,8 @@ class KnownFactControllerISpec extends BaseISpec {
       givenUserCreationInStubsSucceeds()
       givenBusinessDetailsExists(nino)
 
-      val result = await(controller.prepareMtdItKnownFact(Nino(nino))(fakeRequest))
+      val result =
+        await(controller.prepareMtdItKnownFact(Nino(nino))(fakeRequest))
       status(result) shouldBe 200
 
       (jsonBodyOf(result) \ "knownFact").as[String] shouldBe "WV34 8JW"
@@ -66,7 +70,8 @@ class KnownFactControllerISpec extends BaseISpec {
       givenUserCreationInStubsReturnConflict()
       givenBusinessDetailsExists(nino)
 
-      val result = await(controller.prepareMtdItKnownFact(Nino(nino))(fakeRequest))
+      val result =
+        await(controller.prepareMtdItKnownFact(Nino(nino))(fakeRequest))
       status(result) shouldBe 200
 
       (jsonBodyOf(result) \ "knownFact").as[String] shouldBe "WV34 8JW"
@@ -80,7 +85,8 @@ class KnownFactControllerISpec extends BaseISpec {
       givenUserCreationInStubsReturnConflict()
       givenVatCustomerInformationExists(vrn)
 
-      val result = await(controller.prepareMtdVatKnownFact(Vrn(vrn))(fakeRequest))
+      val result =
+        await(controller.prepareMtdVatKnownFact(Vrn(vrn))(fakeRequest))
       status(result) shouldBe 200
 
     }
@@ -92,7 +98,8 @@ class KnownFactControllerISpec extends BaseISpec {
       givenUserCreationInStubsSucceeds()
       givenVatCustomerInformationExistsNoKF(vrn)
 
-      val result = await(controller.prepareMtdVatKnownFact(Vrn(vrn))(fakeRequest))
+      val result =
+        await(controller.prepareMtdVatKnownFact(Vrn(vrn))(fakeRequest))
       status(result) shouldBe 500
     }
 
@@ -103,7 +110,8 @@ class KnownFactControllerISpec extends BaseISpec {
       givenUserCreationInStubsSucceeds()
       givenBusinessDetailsExistsNoKF(nino)
 
-      val result = await(controller.prepareMtdItKnownFact(Nino(nino))(fakeRequest))
+      val result =
+        await(controller.prepareMtdItKnownFact(Nino(nino))(fakeRequest))
       status(result) shouldBe 500
     }
   }
@@ -118,8 +126,12 @@ class KnownFactControllerISpec extends BaseISpec {
             .withHeader("X-Session-ID", "1234567890")))
 
   def givenUserCreationInStubsSucceeds() =
-    stubFor(post(urlPathEqualTo("/agents-external-stubs/users"))
-      .willReturn(aResponse().withStatus(201).withHeader(HeaderNames.LOCATION, "/agents-external-stubs/users/abc123")))
+    stubFor(
+      post(urlPathEqualTo("/agents-external-stubs/users"))
+        .willReturn(
+          aResponse()
+            .withStatus(201)
+            .withHeader(HeaderNames.LOCATION, "/agents-external-stubs/users/abc123")))
 
   def givenUserCreationInStubsReturnConflict() =
     stubFor(

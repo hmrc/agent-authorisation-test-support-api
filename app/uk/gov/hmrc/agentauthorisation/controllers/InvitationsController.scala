@@ -50,7 +50,21 @@ class InvitationsController @Inject()(
   }
 
   def rejectInvitation(id: String): Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(NotImplemented)
+    for {
+      maybeInvitation <- invitationsConnector.getInvitation(id)
+      result <- maybeInvitation match {
+                 case Some(invitation) =>
+                   invitationsConnector
+                     .rejectInvitation(id, invitation.clientId, invitation.clientIdType)
+                     .map {
+                       case Some(204) => NoContent
+                       case Some(404) => NotFound
+                       case Some(403) => Forbidden
+                     }
+                 case None =>
+                   Future.successful(NotFound)
+               }
+    } yield result
   }
 
 }
