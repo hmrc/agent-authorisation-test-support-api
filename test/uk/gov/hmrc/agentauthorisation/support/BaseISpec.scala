@@ -30,16 +30,18 @@ abstract class BaseISpec extends UnitSpec with OneAppPerSuite with WireMockSuppo
   protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
-        "auditing.enabled"                                 -> true,
-        "auditing.consumer.baseUri.host"                   -> wireMockHost,
-        "auditing.consumer.baseUri.port"                   -> wireMockPort,
-        "microservice.services.agents-external-stubs.host" -> wireMockHost,
-        "microservice.services.agents-external-stubs.port" -> wireMockPort,
-        "microservice.services.service-locator.port"       -> wireMockPort,
-        "microservice.services.service-locator.host"       -> wireMockHost,
-        "microservice.services.service-locator.enabled"    -> false,
-        "passcodeAuthentication.enabled"                   -> true,
-        "api.supported-versions"                           -> Seq("1.0")
+        "auditing.enabled"                                      -> true,
+        "auditing.consumer.baseUri.host"                        -> wireMockHost,
+        "auditing.consumer.baseUri.port"                        -> wireMockPort,
+        "microservice.services.agents-external-stubs.host"      -> wireMockHost,
+        "microservice.services.agents-external-stubs.port"      -> wireMockPort,
+        "microservice.services.agent-client-authorisation.host" -> wireMockHost,
+        "microservice.services.agent-client-authorisation.port" -> wireMockPort,
+        "microservice.services.service-locator.port"            -> wireMockPort,
+        "microservice.services.service-locator.host"            -> wireMockHost,
+        "microservice.services.service-locator.enabled"         -> false,
+        "passcodeAuthentication.enabled"                        -> true,
+        "api.supported-versions"                                -> Seq("1.0")
       )
 
   protected implicit val materializer: Materializer = app.materializer

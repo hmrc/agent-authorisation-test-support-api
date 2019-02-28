@@ -44,6 +44,7 @@ class MicroserviceModule(val environment: Environment, val configuration: Config
 
     bindProperty("appName")
     bindBaseUrl("agents-external-stubs")
+    bindBaseUrl("agent-client-authorisation")
     bindServiceBooleanProperty("service-locator.enabled")
 
     bind(classOf[CorePost]).to(classOf[DefaultHttpClient])
