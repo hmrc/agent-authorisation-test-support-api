@@ -84,7 +84,7 @@ class InvitationsConnector @Inject()(
     monitor(s"ConsumedAPI-Get-Invitation-GET") {
       http.GET[Option[Invitation]](new URL(baseUrl, s"/agent-client-authorisation/invitations/$invitationId").toString)
     }.recoverWith {
-      case _ => Future successful None
+      case _: NotFoundException => Future successful None
     }
 
   def acceptInvitation(invitationId: String, clientIdentifier: String, clientIdentifierType: String)(
@@ -96,8 +96,9 @@ class InvitationsConnector @Inject()(
         .PUT[String, HttpResponse](
           new URL(
             baseUrl,
-            s"/agent-client-authorisation/clients/$clientIdentifierType/$clientIdentifier/invitations/received/$invitationId/accept").toString,
-          "")
+            s"/agent-client-authorisation/clients/${clientIdentifierType.toUpperCase}/$clientIdentifier/invitations/received/$invitationId/accept").toString,
+          ""
+        )
         .map(response => Some(response.status))
     }.recover {
       case _: NotFoundException    => Some(404)
@@ -114,8 +115,9 @@ class InvitationsConnector @Inject()(
         .PUT[String, HttpResponse](
           new URL(
             baseUrl,
-            s"/agent-client-authorisation/clients/$clientIdentifierType/$clientIdentifier/invitations/received/$invitationId/reject").toString,
-          "")
+            s"/agent-client-authorisation/clients/${clientIdentifierType.toUpperCase}/$clientIdentifier/invitations/received/$invitationId/reject").toString,
+          ""
+        )
         .map(response => Some(response.status))
     }.recover {
       case _: NotFoundException    => Some(404)

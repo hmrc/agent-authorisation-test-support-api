@@ -60,7 +60,7 @@ traits:
           type: string
           example: "101747696"
       get:
-        displayName: Prepare data in the stub and return VAT Registration Date
+        displayName: Prepare test data in the stubs and return expected payload for POST /agents/{arn}/invitations
 
         responses:
           200:
@@ -79,7 +79,7 @@ traits:
               type: string
               example: AA999999A
           get:
-            displayName: Prepare data in the stub and return business postcode
+            displayName: Prepare test data in the stubs and return expected payload for POST /agents/{arn}/invitations
 
             responses:
               200:
@@ -89,3 +89,31 @@ traits:
                     type: !include schemas/known-facts.schema.json
                     examples:
                       pending and responded: !include examples/known-fact-mtd-it.json
+
+    /invitations:
+      /:id:
+          is: [headers.acceptHeader, headerErrors]
+
+          put:
+            displayName: Accept an invitation created with POST /agents/{arn}/invitations.
+
+            responses:
+              204:
+                description: Invitation has been accepted
+              404:
+                description: Invitation not found for the given id
+              409:
+                description: Invitation already has been rejected or expired
+
+          delete:
+            displayName: Reject an invitation created with POST /agents/{arn}/invitations
+
+            responses:
+              204:
+                description: Invitation has been rejected.
+              404:
+                description: Invitation not found for the given id
+              409:
+                description: Invitation already has been accepted or expired
+
+

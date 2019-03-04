@@ -167,3 +167,130 @@ Returns business postcode matching client's NINO for the purpose of MTD-IT agent
 
 ---
 
+### /agent-authorisation-test-support/known-facts/invitations/:id
+
+#### **PUT**:
+
+###### Headers
+
+| Name | Type | Description | Required | Examples |
+|:-----|:----:|:------------|:--------:|---------:|
+| Accept | string | Specifies the response format and the [version](/api-documentation/docs/reference-guide#versioning) of the API to be used. | true | ``` application/vnd.hmrc.1.0+json ```  |
+
+### Response code: 204
+Invitation has been accepted
+
+### Response code: 400
+
+#### errorResponse (application/json) 
+
+```
+{
+  "code": "BAD_REQUEST",
+  "message": "Missing or unsupported version number"
+}
+```
+```
+{
+  "code": "BAD_REQUEST",
+  "message": "Missing or unsupported content-type."
+}
+```
+
+##### *errorResponse*:
+| Name | Type | Description | Required | Pattern |
+|:-----|:----:|:------------|:--------:|--------:|
+| code |  string |  | true |  |
+
+### Response code: 404
+Invitation not found for the given id
+
+### Response code: 406
+
+#### errorResponse (application/json) 
+
+```
+{
+  "code": "ACCEPT_HEADER_INVALID",
+  "message": "Missing 'Accept' header."
+}
+```
+```
+{
+  "code": "ACCEPT_HEADER_INVALID",
+  "message": "Invalid 'Accept' header"
+}
+```
+
+##### *errorResponse*:
+| Name | Type | Description | Required | Pattern |
+|:-----|:----:|:------------|:--------:|--------:|
+| code |  string |  | true |  |
+
+### Response code: 409
+Invitation already has been rejected or expired
+
+---
+#### **DELETE**:
+
+###### Headers
+
+| Name | Type | Description | Required | Examples |
+|:-----|:----:|:------------|:--------:|---------:|
+| Accept | string | Specifies the response format and the [version](/api-documentation/docs/reference-guide#versioning) of the API to be used. | true | ``` application/vnd.hmrc.1.0+json ```  |
+
+### Response code: 204
+Invitation has been rejected.
+
+### Response code: 400
+
+#### errorResponse (application/json) 
+
+```
+{
+  "code": "BAD_REQUEST",
+  "message": "Missing or unsupported version number"
+}
+```
+```
+{
+  "code": "BAD_REQUEST",
+  "message": "Missing or unsupported content-type."
+}
+```
+
+##### *errorResponse*:
+| Name | Type | Description | Required | Pattern |
+|:-----|:----:|:------------|:--------:|--------:|
+| code |  string |  | true |  |
+
+### Response code: 404
+Invitation not found for the given id
+
+### Response code: 406
+
+#### errorResponse (application/json) 
+
+```
+{
+  "code": "ACCEPT_HEADER_INVALID",
+  "message": "Missing 'Accept' header."
+}
+```
+```
+{
+  "code": "ACCEPT_HEADER_INVALID",
+  "message": "Invalid 'Accept' header"
+}
+```
+
+##### *errorResponse*:
+| Name | Type | Description | Required | Pattern |
+|:-----|:----:|:------------|:--------:|--------:|
+| code |  string |  | true |  |
+
+### Response code: 409
+Invitation already has been accepted or expired
+
+---
+

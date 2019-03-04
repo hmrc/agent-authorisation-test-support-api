@@ -43,8 +43,8 @@ class KnownFactController @Inject()(stubsConnector: AgentsExternalStubsConnector
         affinityGroup = "Organisation",
         principalEnrolments = Seq(User.Enrolment("HMRC-MTD-VAT", Some(Seq(User.Identifier("VRN", vrn.value))))))
     for {
-      (authorizationToken, sessionId) <- stubsConnector
-                                          .signIn(HeaderCarrier(), ec)
+      (authorizationToken, sessionId, _) <- stubsConnector
+                                             .signIn("Alf")(HeaderCarrier(), ec)
       hc = HeaderCarrier(
         authorization = Some(Authorization(authorizationToken)),
         sessionId = Some(SessionId(sessionId)))
@@ -68,8 +68,8 @@ class KnownFactController @Inject()(stubsConnector: AgentsExternalStubsConnector
         confidenceLevel = Some(200),
         principalEnrolments = Seq(User.Enrolment("HMRC-MTD-IT")))
     for {
-      (authorizationToken, sessionId) <- stubsConnector
-                                          .signIn(HeaderCarrier(), ec)
+      (authorizationToken, sessionId, _) <- stubsConnector
+                                             .signIn("Alf")(HeaderCarrier(), ec)
       hc = HeaderCarrier(
         authorization = Some(Authorization(authorizationToken)),
         sessionId = Some(SessionId(sessionId)))

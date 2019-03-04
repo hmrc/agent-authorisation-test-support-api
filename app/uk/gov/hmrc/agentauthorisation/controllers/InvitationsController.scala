@@ -19,7 +19,9 @@ package uk.gov.hmrc.agentauthorisation.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent, Controller}
 import uk.gov.hmrc.agentauthorisation.connectors.{AgentsExternalStubsConnector, InvitationsConnector}
+import uk.gov.hmrc.agentauthorisation.models.Invitation
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.{Authorization, SessionId}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,38 +35,89 @@ class InvitationsController @Inject()(
 
   def acceptInvitation(id: String): Action[AnyContent] = Action.async { implicit request =>
     for {
-      maybeInvitation <- invitationsConnector.getInvitation(id)
-      result <- maybeInvitation match {
-                 case Some(invitation) =>
-                   invitationsConnector
-                     .acceptInvitation(id, invitation.clientId, invitation.clientIdType)
-                     .map {
-                       case Some(204) => NoContent
-                       case Some(404) => NotFound
-                       case Some(403) => Forbidden
-                     }
-                 case None =>
-                   Future.successful(NotFound)
-               }
-    } yield result
+      headerCarrier(hcStubs1, url1) <- agentsExternalStubsConnector.signIn("Alf")
+      maybeInvitation               <- invitationsConnector.getInvitation(id)(hcStubs1, ec)
+      result1 <- maybeInvitation match {
+                  case Some(invitation) =>
+                    invitation.status match {
+                      case "Pending" =>
+                        for {
+                          enrolmentInfo <- agentsExternalStubsConnector
+                                            .getEnrolmentInfo(enrolmentKeyFor(invitation))(hcStubs1, ec)
+                          headerCarrier(hcStubs2, url2) <- agentsExternalStubsConnector.signIn(
+                                                            enrolmentInfo.user
+                                                              .flatMap(_.userId)
+                                                              .getOrElse(throw new Exception(
+                                                                s"serId not found for an invitation ${enrolmentKeyFor(
+                                                                  invitation)}")))
+                          result2 <- invitationsConnector
+                                      .acceptInvitation(id, invitation.clientId, invitation.clientIdType)(hcStubs2, ec)
+                                      .map {
+                                        case Some(204) => NoContent
+                                        case Some(404) =>
+                                          NotFound(
+                                            s"Invitation $id for ${enrolmentKeyFor(invitation)} not found, current user $url2")
+                                        case Some(403) => Forbidden
+                                        case _         => InternalServerError
+                                      }
+                        } yield result2
+                      case "Rejected" | "Expired" => Future.successful(Conflict)
+                      case "Accepted"             => Future.successful(NoContent)
+                      case _                      => Future.successful(Forbidden)
+                    }
+                  case None =>
+                    Future.successful(NotFound)
+                }
+    } yield result1
   }
 
   def rejectInvitation(id: String): Action[AnyContent] = Action.async { implicit request =>
     for {
-      maybeInvitation <- invitationsConnector.getInvitation(id)
-      result <- maybeInvitation match {
-                 case Some(invitation) =>
-                   invitationsConnector
-                     .rejectInvitation(id, invitation.clientId, invitation.clientIdType)
-                     .map {
-                       case Some(204) => NoContent
-                       case Some(404) => NotFound
-                       case Some(403) => Forbidden
-                     }
-                 case None =>
-                   Future.successful(NotFound)
-               }
-    } yield result
+      headerCarrier(hcStubs1, url1) <- agentsExternalStubsConnector.signIn("Alf")
+      maybeInvitation               <- invitationsConnector.getInvitation(id)(hcStubs1, ec)
+      result1 <- maybeInvitation match {
+                  case Some(invitation) =>
+                    invitation.status match {
+                      case "Pending" =>
+                        for {
+                          enrolmentInfo <- agentsExternalStubsConnector
+                                            .getEnrolmentInfo(enrolmentKeyFor(invitation))(hcStubs1, ec)
+                          headerCarrier(hcStubs2, url2) <- agentsExternalStubsConnector.signIn(
+                                                            enrolmentInfo.user
+                                                              .flatMap(_.userId)
+                                                              .getOrElse(throw new Exception(
+                                                                s"userId not found for an invitation ${enrolmentKeyFor(
+                                                                  invitation)}")))
+                          result2 <- invitationsConnector
+                                      .rejectInvitation(id, invitation.clientId, invitation.clientIdType)(hcStubs2, ec)
+                                      .map {
+                                        case Some(204) => NoContent
+                                        case Some(404) =>
+                                          NotFound(
+                                            s"Invitation $id for ${enrolmentKeyFor(invitation)} not found, current user $url2")
+                                        case Some(403) => Forbidden
+                                        case _         => InternalServerError
+                                      }
+                        } yield result2
+                      case "Accepted" | "Expired" => Future.successful(Conflict)
+                      case "Rejected"             => Future.successful(NoContent)
+                      case _                      => Future.successful(Forbidden)
+                    }
+                  case None =>
+                    Future.successful(NotFound)
+                }
+    } yield result1
+  }
+
+  def enrolmentKeyFor(invitation: Invitation): String = invitation.service match {
+    case "HMRC-MTD-VAT" => s"HMRC-MTD-VAT~VRN~${invitation.clientId}"
+    case "HMRC-MTD-IT"  => s"HMRC-MTD-IT~MTDITID~${invitation.clientId}"
+    case _              => throw new Exception("Unsupported service type")
+  }
+
+  object headerCarrier {
+    def unapply(arg: (String, String, String)): Option[(HeaderCarrier, String)] =
+      Some((HeaderCarrier(authorization = Some(Authorization(arg._1)), sessionId = Some(SessionId(arg._2))), arg._3))
   }
 
 }

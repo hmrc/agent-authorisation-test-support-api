@@ -123,7 +123,8 @@ class KnownFactControllerISpec extends BaseISpec {
           aResponse()
             .withStatus(201)
             .withHeader(HeaderNames.AUTHORIZATION, "Bearer 1234567890")
-            .withHeader("X-Session-ID", "1234567890")))
+            .withHeader("X-Session-ID", "1234567890")
+            .withHeader(HeaderNames.LOCATION, "/agents-external-stubs/foo")))
 
   def givenUserCreationInStubsSucceeds() =
     stubFor(
