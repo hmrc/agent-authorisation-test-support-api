@@ -57,6 +57,11 @@ traits:
 
         put:
           displayName: Accept an invitation created with POST /agents/{arn}/invitations.
+          headers:
+            Content-Length:
+              type: number
+              required: true
+              description: An empty PUT body must have this header value set to 0.
 
           responses:
             204:

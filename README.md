@@ -16,6 +16,7 @@ The Agent Authorisation Test Support API provides test-only ability to accept or
 | Name | Type | Description | Required | Examples |
 |:-----|:----:|:------------|:--------:|---------:|
 | Accept | string | Specifies the response format and the [version](/api-documentation/docs/reference-guide#versioning) of the API to be used. | true | ``` application/vnd.hmrc.1.0+json ```  |
+| Content-Length | number | An empty PUT body must have this header value set to 0 | true | 0  |
 
 ### Response code: 204
 Invitation has been accepted
