@@ -20,7 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 trait AgentsExternalStubs {
   self: TestIdentifiers =>
 
-  def givenITSAUserAuthenticatedInStubs: Unit = {
+  def givenITSAUserAuthenticatedInStubs(): Unit = {
     givenUserAuthenticatedInStubs("Alf")
     givenClientEnrolmentExistsInStubs(s"HMRC-MTD-IT~MTDITID~${mtdItId.value}", "ITSAClient001")
     givenUserAuthenticatedInStubs("ITSAClient001")
