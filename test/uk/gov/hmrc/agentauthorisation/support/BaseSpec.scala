@@ -26,7 +26,6 @@ import org.scalatestplus.play.OneAppPerSuite
 import play.api.mvc.{Headers, RequestHeader}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.api.connector.ServiceLocatorConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -38,10 +37,6 @@ abstract class BaseSpec extends UnitSpec with MockitoSugar with OneAppPerSuite {
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   val arn: Arn = Arn("TARN0000001")
-
-  val mockServiceLocator: ServiceLocatorConnector = mock[ServiceLocatorConnector]
-
-  when(mockServiceLocator.register).thenReturn(Future.successful(true))
 
   def testRequest[A](fakeRequest: FakeRequest[A]): RequestHeader = new RequestHeader {
     override def id: Long = fakeRequest.id

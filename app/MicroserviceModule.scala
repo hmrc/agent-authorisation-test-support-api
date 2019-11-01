@@ -21,7 +21,6 @@ import com.google.inject.name.Names
 import javax.inject.Provider
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.api.connector.{ApiServiceLocatorConnector, ServiceLocatorConnector}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 import uk.gov.hmrc.play.config.ServicesConfig
@@ -49,9 +48,6 @@ class MicroserviceModule(val environment: Environment, val configuration: Config
     bind(classOf[HttpGet]).to(classOf[DefaultHttpClient])
     bind(classOf[HttpPost]).to(classOf[DefaultHttpClient])
     bind(classOf[HttpPut]).to(classOf[DefaultHttpClient])
-
-    bind(classOf[ServiceLocatorConnector])
-      .to(classOf[ApiServiceLocatorConnector])
 
     bindSeqStringProperty("api.supported-versions")
   }
