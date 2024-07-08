@@ -16,15 +16,14 @@
 
 package uk.gov.hmrc.agentauthorisation.connectors
 
-import java.net.URL
-import javax.inject.{Inject, Named, Singleton}
-import java.time.format.DateTimeFormatter
 import uk.gov.hmrc.agentauthorisation.models.Invitation
 import uk.gov.hmrc.agentauthorisation.util.HttpAPIMonitor
-import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
+import java.net.URL
+import javax.inject.{Inject, Named, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -64,7 +63,7 @@ class InvitationsConnector @Inject() (
 
   def rejectInvitation(invitationId: String, clientIdentifier: String, clientIdentifierType: String)(implicit
     headerCarrier: HeaderCarrier,
-    executionContext: ExecutionContext
+    ec: ExecutionContext
   ): Future[Option[Int]] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       http
