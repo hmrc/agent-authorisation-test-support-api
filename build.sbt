@@ -1,46 +1,63 @@
-import AppDependencies.{compileDeps, testDeps}
-import CodeCoverageSettings.scoverageSettings
-import sbt.Tests.{Group, SubProcess}
-import uk.gov.hmrc.SbtAutoBuildPlugin
+import uk.gov.hmrc.DefaultBuildSettings
+
+val appName = "agent-authorisation-test-support-api"
+
+ThisBuild / majorVersion := 1
+ThisBuild / scalaVersion := "2.13.12"
+
+lazy val scoverageSettings = {
+  import scoverage.ScoverageKeys
+  Seq(
+    // Semicolon-separated list of regexs matching classes to exclude
+    ScoverageKeys.coverageExcludedPackages := """uk\.gov\.hmrc\.BuildInfo;.*\.Routes;.*\.RoutesPrefix;.*Filters?;MicroserviceAuditConnector;Module;GraphiteStartUp;.*\.Reverse[^.]*""",
+    ScoverageKeys.coverageMinimumStmtTotal := 80.00,
+    ScoverageKeys.coverageFailOnMinimum := true,
+    ScoverageKeys.coverageHighlighting := true,
+    Test / parallelExecution := false
+  )
+}
+
+val scalaCOptions = Seq(
+  "-Xfatal-warnings",
+  "-Xlint:-missing-interpolator,_",
+  "-Ywarn-value-discard",
+  "-Ywarn-dead-code",
+  "-deprecation",
+  "-feature",
+  "-unchecked",
+  "-Wconf:src=target/.*:s", // silence warnings from compiled files
+  "-Wconf:src=routes/.*:s", // silence warnings from routes files
+  "-Wconf:src=*html:w", // silence html warnings as they are wrong
+  "-language:implicitConversions"
+)
 
 lazy val root = (project in file("."))
   .settings(
-    name := "agent-authorisation-test-support-api",
+    name := appName,
     organization := "uk.gov.hmrc",
-    scalaVersion := "2.13.10",
     PlayKeys.playDefaultPort := 9443,
-    resolvers ++= Seq(
-      Resolver.typesafeRepo("releases")
-    ),
-    resolvers += "HMRC-open-artefacts-maven" at "https://open.artefacts.tax.service.gov.uk/maven2",
-    resolvers += Resolver.url("HMRC-open-artefacts-ivy", url("https://open.artefacts.tax.service.gov.uk/ivy2"))(Resolver.ivyStylePatterns),
-    libraryDependencies ++= compileDeps ++ testDeps("test") ++ testDeps("it"),
-    libraryDependencySchemes ++= Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always),
-    routesImport += "uk.gov.hmrc.agentauthorisation.binders.UrlBinders._",
-    scalacOptions ++= Seq(
-      "-Wconf:src=routes/.*:s", // silence warnings from routes files
-      "-Wconf:cat=unused-imports&src=txt/.*:s" // silence warnings from api json
-    ),
-    scoverageSettings,
-    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
-    majorVersion := 0,
+    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
+    resolvers ++= Seq(Resolver.typesafeRepo("releases")),
+    routesImport ++= Seq("uk.gov.hmrc.agentauthorisation.binders.UrlBinders._"),
+    scalacOptions ++= scalaCOptions,
+    Compile / scalafmtOnCompile := true,
+    Test / scalafmtOnCompile := true,
+    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources"
+  )
+  .settings(
+    Test / parallelExecution := false,
+    scoverageSettings
+  )
+  .enablePlugins(PlayScala, SbtDistributablesPlugin)
+  .disablePlugins(JUnitXmlReportPlugin)
+
+
+lazy val it = project
+  .enablePlugins(PlayScala)
+  .dependsOn(root % "test->test") // the "test->test" allows reusing test code and test dependencies
+  .settings(DefaultBuildSettings.itSettings())
+  .settings(libraryDependencies ++= AppDependencies.test)
+  .settings(
     Compile / scalafmtOnCompile := true,
     Test / scalafmtOnCompile := true
   )
-  .configs(IntegrationTest)
-  .settings(
-    IntegrationTest / Keys.fork := false,
-    Defaults.itSettings,
-    IntegrationTest / unmanagedSourceDirectories += baseDirectory(_ / "it").value,
-    IntegrationTest / parallelExecution := false,
-    IntegrationTest / testGrouping := oneForkedJvmPerTest((IntegrationTest / definedTests).value)
-  )
-  .enablePlugins(PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
-
-inConfig(IntegrationTest)(scalafmtCoreSettings)
-
-def oneForkedJvmPerTest(tests: Seq[TestDefinition]) = {
-  tests.map { test =>
-    new Group(test.name, Seq(test), SubProcess(ForkOptions().withRunJVMOptions(Vector(s"-Dtest.name=${test.name}"))))
-  }
-}

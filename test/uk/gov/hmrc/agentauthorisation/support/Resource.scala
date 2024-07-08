@@ -31,11 +31,11 @@ object Http {
       request.get()
   }
 
-  def post(url: String, body: String, headers: Seq[(String, String)] = Seq.empty)(
-    implicit
+  def post(url: String, body: String, headers: Seq[(String, String)] = Seq.empty)(implicit
     hc: HeaderCarrier,
     ec: ExecutionContext,
-    ws: WSClient): HttpResponse = perform(url) { request =>
+    ws: WSClient
+  ): HttpResponse = perform(url) { request =>
     request.withHttpHeaders(headers: _*).post(body)
   }
 
@@ -54,16 +54,16 @@ object Http {
       request.delete()
   }
 
-  private def perform(url: String)(fun: WSRequest => Future[WSResponse])(
-    implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext,
-    ws: WSClient): HttpResponse =
+  private def perform(url: String)(
+    fun: WSRequest => Future[WSResponse]
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext, ws: WSClient): HttpResponse =
     await(
       fun(
         ws.url(url)
           .withHttpHeaders(hc.headers(hc.names.explicitlyIncludedHeaders): _*)
-          .withRequestTimeout(Duration(20000, MILLISECONDS))).map(WSHttpResponse(_)))
+          .withRequestTimeout(Duration(20000, MILLISECONDS))
+      ).map(WSHttpResponse(_))
+    )
 
   private def await[A](future: Future[A]) =
     Await.result(future, Duration(10, SECONDS))

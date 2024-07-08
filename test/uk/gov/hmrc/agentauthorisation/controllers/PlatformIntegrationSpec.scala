@@ -37,7 +37,8 @@ class PlatformIntegrationSpec extends BaseISpec {
     WireMock.configureFor(stubHost, stubPort)
     stubFor(
       post(urlMatching("/registration"))
-        .willReturn(aResponse().withStatus(NO_CONTENT)))
+        .willReturn(aResponse().withStatus(NO_CONTENT))
+    )
   }
 
   trait Setup {
@@ -71,13 +72,11 @@ class PlatformIntegrationSpec extends BaseISpec {
 
       versions
         .zip(endpointNames)
-        .flatMap {
-          case (version, endpoint) =>
-            endpoint.map(endpointName => (version, endpointName))
+        .flatMap { case (version, endpoint) =>
+          endpoint.map(endpointName => (version, endpointName))
         }
-        .foreach {
-          case (version, endpointName) =>
-            verifyDocumentationPresent(version, endpointName)
+        .foreach { case (version, endpointName) =>
+          verifyDocumentationPresent(version, endpointName)
         }
     }
 

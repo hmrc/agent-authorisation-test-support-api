@@ -27,8 +27,13 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.agentauthorisation.stubs.DataStreamStubs
 
 abstract class BaseISpec
-    extends AnyWordSpecLike with Matchers with OptionValues with ScalaFutures with GuiceOneAppPerSuite
-    with WireMockSupport with DataStreamStubs {
+    extends AnyWordSpecLike
+    with Matchers
+    with OptionValues
+    with ScalaFutures
+    with GuiceOneAppPerSuite
+    with WireMockSupport
+    with DataStreamStubs {
 
   override implicit lazy val app: Application = appBuilder.build()
 

@@ -23,17 +23,15 @@ import play.core.DefaultWebCommands
 
 import javax.inject.Inject
 
-/**
-  * Normalise the request path. The API platform strips the context
-  * '/agents' from the URL before forwarding the request.
-  * Re-add it here if necessary.
+/** Normalise the request path. The API platform strips the context '/agents' from the URL before forwarding the
+  * request. Re-add it here if necessary.
   */
-class ApiPlatformRequestHandler @Inject()(
+class ApiPlatformRequestHandler @Inject() (
   router: Router,
   errorHandler: HttpErrorHandler,
   configuration: HttpConfiguration,
-  filters: HttpFilters)
-    extends DefaultHttpRequestHandler(
+  filters: HttpFilters
+) extends DefaultHttpRequestHandler(
       new DefaultWebCommands,
       None,
       router,

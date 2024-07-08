@@ -31,11 +31,11 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class KnownFactController @Inject()(
+class KnownFactController @Inject() (
   stubsConnector: AgentsExternalStubsConnector,
   ecp: Provider[ExecutionContext],
-  controllerComponents: ControllerComponents)
-    extends BackendController(controllerComponents) {
+  controllerComponents: ControllerComponents
+) extends BackendController(controllerComponents) {
 
   implicit val ec: ExecutionContext = ecp.get
 
@@ -49,23 +49,22 @@ class KnownFactController @Inject()(
     val user =
       User(
         userId = null,
-        assignedPrincipalEnrolments = Seq(EnrolmentKey("HMRC-MTD-VAT", Seq(Identifier("VRN", vrn.value)))))
+        assignedPrincipalEnrolments = Seq(EnrolmentKey("HMRC-MTD-VAT", Seq(Identifier("VRN", vrn.value))))
+      )
     for {
       (authorizationToken, sessionId, _) <- stubsConnector
-                                             .signIn("Alf")(HeaderCarrier(), ec)
-      hc = HeaderCarrier(
-        authorization = Some(Authorization(authorizationToken)),
-        sessionId = Some(SessionId(sessionId)))
+                                              .signIn("Alf")(HeaderCarrier(), ec)
+      hc =
+        HeaderCarrier(authorization = Some(Authorization(authorizationToken)), sessionId = Some(SessionId(sessionId)))
       _ <- stubsConnector.createUser(user, Individual)(hc, ec)
       vatCustomerInformation <- stubsConnector
-                                 .getVatCustomerInformation(vrn)(hc, ec)
-    } yield
-      vatCustomerInformation.flatMap(_.effectiveRegistrationDate) match {
-        case Some(date) =>
-          Ok(Json.toJson(KnownFactResponse(Seq("MTD-VAT"), "personal", "vrn", vrn.value, date.format(dateFormat))))
-        case None =>
-          InternalServerError("Missing VAT Registration Date verifier")
-      }
+                                  .getVatCustomerInformation(vrn)(hc, ec)
+    } yield vatCustomerInformation.flatMap(_.effectiveRegistrationDate) match {
+      case Some(date) =>
+        Ok(Json.toJson(KnownFactResponse(Seq("MTD-VAT"), "personal", "vrn", vrn.value, date.format(dateFormat))))
+      case None =>
+        InternalServerError("Missing VAT Registration Date verifier")
+    }
   }
 
   def prepareMtdItKnownFact(nino: Nino): Action[AnyContent] = Action.async {
@@ -74,23 +73,23 @@ class KnownFactController @Inject()(
         userId = null,
         nino = Some(nino),
         confidenceLevel = Some(250),
-        assignedPrincipalEnrolments = Seq(EnrolmentKey("HMRC-MTD-IT", Seq.empty)))
+        assignedPrincipalEnrolments = Seq(EnrolmentKey("HMRC-MTD-IT", Seq.empty))
+      )
     for {
       (authorizationToken, sessionId, _) <- stubsConnector
-                                             .signIn("Alf")(HeaderCarrier(), ec)
-      hc = HeaderCarrier(
-        authorization = Some(Authorization(authorizationToken)),
-        sessionId = Some(SessionId(sessionId)))
+                                              .signIn("Alf")(HeaderCarrier(), ec)
+      hc =
+        HeaderCarrier(authorization = Some(Authorization(authorizationToken)), sessionId = Some(SessionId(sessionId)))
       _               <- stubsConnector.createUser(user, Individual)(hc, ec)
       businessDetails <- stubsConnector.getBusinessDetails(nino)(hc, ec)
-    } yield
-      businessDetails.flatMap(
-        _.businessData.headOption
-          .flatMap(_.businessAddressDetails.postalCode)) match {
-        case Some(postcode) =>
-          Ok(Json.toJson(KnownFactResponse(Seq("MTD-IT"), "personal", "nino", nino.value, postcode)))
-        case None => InternalServerError("Missing business postcode verifier")
-      }
+    } yield businessDetails.flatMap(
+      _.businessData.headOption
+        .flatMap(_.businessAddressDetails.postalCode)
+    ) match {
+      case Some(postcode) =>
+        Ok(Json.toJson(KnownFactResponse(Seq("MTD-IT"), "personal", "nino", nino.value, postcode)))
+      case None => InternalServerError("Missing business postcode verifier")
+    }
   }
 
 }
@@ -102,7 +101,8 @@ object KnownFactController {
     clientType: String,
     clientIdType: String,
     clientId: String,
-    knownFact: String)
+    knownFact: String
+  )
 
   object KnownFactResponse {
     implicit val formats: Format[KnownFactResponse] =

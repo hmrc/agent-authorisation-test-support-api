@@ -31,34 +31,32 @@ import uk.gov.hmrc.http.HttpReads.Implicits._
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class InvitationsConnector @Inject()(
+class InvitationsConnector @Inject() (
   @Named("agent-client-authorisation-baseUrl") baseUrl: URL,
   http: HttpPost with HttpGet with HttpPut,
-  metrics: Metrics)
-    extends HttpAPIMonitor {
+  metrics: Metrics
+) extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def getInvitation(invitationId: String)(
-    implicit
-    headerCarrier: HeaderCarrier,
-    executionContext: ExecutionContext) =
+  def getInvitation(invitationId: String)(implicit headerCarrier: HeaderCarrier, executionContext: ExecutionContext) =
     monitor(s"ConsumedAPI-Get-Invitation-GET") {
       http.GET[Option[Invitation]](new URL(baseUrl, s"/agent-client-authorisation/invitations/$invitationId").toString)
-    }.recoverWith {
-      case _: NotFoundException => Future successful None
+    }.recoverWith { case _: NotFoundException =>
+      Future successful None
     }
 
-  def acceptInvitation(invitationId: String, clientIdentifier: String, clientIdentifierType: String)(
-    implicit
+  def acceptInvitation(invitationId: String, clientIdentifier: String, clientIdentifierType: String)(implicit
     headerCarrier: HeaderCarrier,
-    executionContext: ExecutionContext): Future[Option[Int]] =
+    executionContext: ExecutionContext
+  ): Future[Option[Int]] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       http
         .PUT[String, HttpResponse](
           new URL(
             baseUrl,
-            s"/agent-client-authorisation/clients/${clientIdentifierType.toUpperCase}/$clientIdentifier/invitations/received/$invitationId/accept").toString,
+            s"/agent-client-authorisation/clients/${clientIdentifierType.toUpperCase}/$clientIdentifier/invitations/received/$invitationId/accept"
+          ).toString,
           ""
         )
         .map(response => Some(response.status))
@@ -68,16 +66,17 @@ class InvitationsConnector @Inject()(
       case _                         => Some(403)
     }
 
-  def rejectInvitation(invitationId: String, clientIdentifier: String, clientIdentifierType: String)(
-    implicit
+  def rejectInvitation(invitationId: String, clientIdentifier: String, clientIdentifierType: String)(implicit
     headerCarrier: HeaderCarrier,
-    executionContext: ExecutionContext): Future[Option[Int]] =
+    executionContext: ExecutionContext
+  ): Future[Option[Int]] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       http
         .PUT[String, HttpResponse](
           new URL(
             baseUrl,
-            s"/agent-client-authorisation/clients/${clientIdentifierType.toUpperCase}/$clientIdentifier/invitations/received/$invitationId/reject").toString,
+            s"/agent-client-authorisation/clients/${clientIdentifierType.toUpperCase}/$clientIdentifier/invitations/received/$invitationId/reject"
+          ).toString,
           ""
         )
         .map(response => Some(response.status))

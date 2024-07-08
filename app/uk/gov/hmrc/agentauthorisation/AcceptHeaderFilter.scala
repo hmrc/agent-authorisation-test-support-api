@@ -28,9 +28,9 @@ import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
 @Singleton
-class AcceptHeaderFilter @Inject()(@Named("api.supported-versions") apiSupportedVersions: Seq[String])(
-  implicit materializer: Materializer)
-    extends Filter {
+class AcceptHeaderFilter @Inject() (@Named("api.supported-versions") apiSupportedVersions: Seq[String])(implicit
+  materializer: Materializer
+) extends Filter {
   override implicit def mat: Materializer = materializer
 
   import AcceptHeaderFilter._

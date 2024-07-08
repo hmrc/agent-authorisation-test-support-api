@@ -21,7 +21,7 @@ import play.api.libs.json.{JsObject, Reads, __}
 case class VatCustomerInfo(effectiveRegistrationDate: Option[LocalDate])
 
 object VatCustomerInfo {
-  implicit val vatCustomerInfoReads: Reads[VatCustomerInfo] = {
+  implicit val vatCustomerInfoReads: Reads[VatCustomerInfo] =
     (__ \ "approvedInformation").readNullable[JsObject].map {
       case Some(approvedInformation) =>
         val maybeDate =
@@ -32,5 +32,4 @@ object VatCustomerInfo {
       case None =>
         VatCustomerInfo(None)
     }
-  }
 }

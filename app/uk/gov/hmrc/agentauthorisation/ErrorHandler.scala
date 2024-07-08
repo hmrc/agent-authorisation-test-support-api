@@ -27,10 +27,10 @@ import uk.gov.hmrc.play.bootstrap.backend.http.JsonErrorHandler
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ErrorHandler @Inject()(auditConnector: AuditConnector, httpAuditEvent: HttpAuditEvent)(
-  implicit ec: ExecutionContext,
-  configuration: Configuration)
-    extends JsonErrorHandler(auditConnector, httpAuditEvent, configuration) {
+class ErrorHandler @Inject() (auditConnector: AuditConnector, httpAuditEvent: HttpAuditEvent)(implicit
+  ec: ExecutionContext,
+  configuration: Configuration
+) extends JsonErrorHandler(auditConnector, httpAuditEvent, configuration) {
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] =
     super.onClientError(request, statusCode, message).map { auditedError =>

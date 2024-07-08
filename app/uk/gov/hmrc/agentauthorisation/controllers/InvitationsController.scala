@@ -27,10 +27,11 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class InvitationsController @Inject()(
+class InvitationsController @Inject() (
   invitationsConnector: InvitationsConnector,
   agentsExternalStubsConnector: AgentsExternalStubsConnector,
-  controllerComponents: ControllerComponents)(implicit ec: ExecutionContext)
+  controllerComponents: ControllerComponents
+)(implicit ec: ExecutionContext)
     extends BackendController(controllerComponents) {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -40,30 +41,32 @@ class InvitationsController @Inject()(
       headerCarrier(hcStubs1, _) <- agentsExternalStubsConnector.signIn("Alf")
       maybeInvitation            <- invitationsConnector.getInvitation(id)(hcStubs1, ec)
       result1 <- maybeInvitation match {
-                  case Some(invitation) =>
-                    invitation.status match {
-                      case "Pending" =>
-                        for {
-                          userId                        <- getUserId(invitation)(hcStubs1, ec)
-                          headerCarrier(hcStubs2, url2) <- agentsExternalStubsConnector.signIn(userId)
-                          result2 <- invitationsConnector
-                                      .acceptInvitation(id, invitation.clientId, invitation.clientIdType)(hcStubs2, ec)
-                                      .map {
-                                        case Some(204) => NoContent
-                                        case Some(404) =>
-                                          NotFound(
-                                            s"Invitation $id for ${enrolmentKeyFor(invitation)} not found, current user $url2")
-                                        case Some(403) => Forbidden
-                                        case _         => InternalServerError
-                                      }
-                        } yield result2
-                      case "Rejected" | "Expired" => Future.successful(Conflict)
-                      case "Accepted"             => Future.successful(NoContent)
-                      case _                      => Future.successful(Forbidden)
-                    }
-                  case None =>
-                    Future.successful(NotFound)
-                }
+                   case Some(invitation) =>
+                     invitation.status match {
+                       case "Pending" =>
+                         for {
+                           userId                        <- getUserId(invitation)(hcStubs1, ec)
+                           headerCarrier(hcStubs2, url2) <- agentsExternalStubsConnector.signIn(userId)
+                           result2 <-
+                             invitationsConnector
+                               .acceptInvitation(id, invitation.clientId, invitation.clientIdType)(hcStubs2, ec)
+                               .map {
+                                 case Some(204) => NoContent
+                                 case Some(404) =>
+                                   NotFound(
+                                     s"Invitation $id for ${enrolmentKeyFor(invitation)} not found, current user $url2"
+                                   )
+                                 case Some(403) => Forbidden
+                                 case _         => InternalServerError
+                               }
+                         } yield result2
+                       case "Rejected" | "Expired" => Future.successful(Conflict)
+                       case "Accepted"             => Future.successful(NoContent)
+                       case _                      => Future.successful(Forbidden)
+                     }
+                   case None =>
+                     Future.successful(NotFound)
+                 }
     } yield result1
   }
 
@@ -72,30 +75,32 @@ class InvitationsController @Inject()(
       headerCarrier(hcStubs1, url1) <- agentsExternalStubsConnector.signIn("Alf")
       maybeInvitation               <- invitationsConnector.getInvitation(id)(hcStubs1, ec)
       result1 <- maybeInvitation match {
-                  case Some(invitation) =>
-                    invitation.status match {
-                      case "Pending" =>
-                        for {
-                          userId                        <- getUserId(invitation)(hcStubs1, ec)
-                          headerCarrier(hcStubs2, url2) <- agentsExternalStubsConnector.signIn(userId)
-                          result2 <- invitationsConnector
-                                      .rejectInvitation(id, invitation.clientId, invitation.clientIdType)(hcStubs2, ec)
-                                      .map {
-                                        case Some(204) => NoContent
-                                        case Some(404) =>
-                                          NotFound(
-                                            s"Invitation $id for ${enrolmentKeyFor(invitation)} not found, current user $url2")
-                                        case Some(403) => Forbidden
-                                        case _         => InternalServerError
-                                      }
-                        } yield result2
-                      case "Accepted" | "Expired" => Future.successful(Conflict)
-                      case "Rejected"             => Future.successful(NoContent)
-                      case _                      => Future.successful(Forbidden)
-                    }
-                  case None =>
-                    Future.successful(NotFound)
-                }
+                   case Some(invitation) =>
+                     invitation.status match {
+                       case "Pending" =>
+                         for {
+                           userId                        <- getUserId(invitation)(hcStubs1, ec)
+                           headerCarrier(hcStubs2, url2) <- agentsExternalStubsConnector.signIn(userId)
+                           result2 <-
+                             invitationsConnector
+                               .rejectInvitation(id, invitation.clientId, invitation.clientIdType)(hcStubs2, ec)
+                               .map {
+                                 case Some(204) => NoContent
+                                 case Some(404) =>
+                                   NotFound(
+                                     s"Invitation $id for ${enrolmentKeyFor(invitation)} not found, current user $url2"
+                                   )
+                                 case Some(403) => Forbidden
+                                 case _         => InternalServerError
+                               }
+                         } yield result2
+                       case "Accepted" | "Expired" => Future.successful(Conflict)
+                       case "Rejected"             => Future.successful(NoContent)
+                       case _                      => Future.successful(Forbidden)
+                     }
+                   case None =>
+                     Future.successful(NotFound)
+                 }
     } yield result1
   }
 

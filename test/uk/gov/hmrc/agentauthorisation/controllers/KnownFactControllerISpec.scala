@@ -119,7 +119,9 @@ class KnownFactControllerISpec extends BaseISpec {
             .withStatus(201)
             .withHeader(HeaderNames.AUTHORIZATION, "Bearer 1234567890")
             .withHeader("X-Session-ID", "1234567890")
-            .withHeader(HeaderNames.LOCATION, "/agents-external-stubs/foo")))
+            .withHeader(HeaderNames.LOCATION, "/agents-external-stubs/foo")
+        )
+    )
 
   def givenUserCreationInStubsSucceeds() =
     stubFor(
@@ -127,95 +129,118 @@ class KnownFactControllerISpec extends BaseISpec {
         .willReturn(
           aResponse()
             .withStatus(201)
-            .withHeader(HeaderNames.LOCATION, "/agents-external-stubs/users/abc123")))
+            .withHeader(HeaderNames.LOCATION, "/agents-external-stubs/users/abc123")
+        )
+    )
 
   def givenUserCreationInStubsReturnConflict() =
     stubFor(
       post(urlPathEqualTo("/agents-external-stubs/users"))
-        .willReturn(aResponse().withStatus(409)))
+        .willReturn(aResponse().withStatus(409))
+    )
 
   def givenVatCustomerInformationExists(vrn: String) =
     stubFor(
       get(urlPathEqualTo(s"/vat/customer/vrn/$vrn/information"))
         .withHeader("X-Session-ID", equalTo("1234567890"))
-        .willReturn(aResponse().withStatus(200).withBody(s"""
-                                                            |{
-                                                            |  "vrn" : "$vrn",
-                                                            |  "approvedInformation" : {
-                                                            |    "customerDetails" : {
-                                                            |      "tradingName" : "Conto-Dom Inc.",
-                                                            |      "mandationStatus" : "4",
-                                                            |      "registrationReason" : "0006",
-                                                            |      "effectiveRegistrationDate" : "2017-11-09",
-                                                            |      "businessStartDate" : "1990-09-28"
-                                                            |    }
-                                                            |  }
-                                                            |}
-           """.stripMargin)))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |{
+                         |  "vrn" : "$vrn",
+                         |  "approvedInformation" : {
+                         |    "customerDetails" : {
+                         |      "tradingName" : "Conto-Dom Inc.",
+                         |      "mandationStatus" : "4",
+                         |      "registrationReason" : "0006",
+                         |      "effectiveRegistrationDate" : "2017-11-09",
+                         |      "businessStartDate" : "1990-09-28"
+                         |    }
+                         |  }
+                         |}
+           """.stripMargin)
+        )
+    )
 
   def givenVatCustomerInformationExistsNoKF(vrn: String) =
     stubFor(
       get(urlPathEqualTo(s"/vat/customer/vrn/$vrn/information"))
         .withHeader("X-Session-ID", equalTo("1234567890"))
-        .willReturn(aResponse().withStatus(200).withBody(s"""
-                                                            |{
-                                                            |  "vrn" : "$vrn",
-                                                            |  "approvedInformation" : {
-                                                            |    "customerDetails" : {
-                                                            |      "tradingName" : "Conto-Dom Inc.",
-                                                            |      "mandationStatus" : "4",
-                                                            |      "registrationReason" : "0006",
-                                                            |      "businessStartDate" : "1990-09-28"
-                                                            |    }
-                                                            |  }
-                                                            |}
-           """.stripMargin)))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |{
+                         |  "vrn" : "$vrn",
+                         |  "approvedInformation" : {
+                         |    "customerDetails" : {
+                         |      "tradingName" : "Conto-Dom Inc.",
+                         |      "mandationStatus" : "4",
+                         |      "registrationReason" : "0006",
+                         |      "businessStartDate" : "1990-09-28"
+                         |    }
+                         |  }
+                         |}
+           """.stripMargin)
+        )
+    )
 
   def givenBusinessDetailsExists(nino: String) =
     stubFor(
       get(urlPathEqualTo(s"/registration/business-details/nino/$nino"))
         .withHeader("X-Session-ID", equalTo("1234567890"))
-        .willReturn(aResponse().withStatus(200).withBody(s"""
-                                                            |{
-                                                            |  "safeId" : "XW0007448578742",
-                                                            |  "nino" : "AB104897B",
-                                                            |  "mtdbsa" : "WVNQ79994005359",
-                                                            |  "propertyIncome" : true,
-                                                            |  "businessData" : [ {
-                                                            |    "tradingName" : "Royal Bergentronic Group",
-                                                            |    "businessAddressDetails" : {
-                                                            |      "addressLine1" : "85 Thurlby Way",
-                                                            |      "addressLine2" : "The Knight House",
-                                                            |      "addressLine3" : "Aberdeen",
-                                                            |      "addressLine4" : "AB45 0CJ",
-                                                            |      "postalCode" : "WV34 8JW",
-                                                            |      "countryCode" : "GB"
-                                                            |    }
-                                                            |  }]
-                                                            |}
-           """.stripMargin)))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |{
+                         |  "safeId" : "XW0007448578742",
+                         |  "nino" : "AB104897B",
+                         |  "mtdbsa" : "WVNQ79994005359",
+                         |  "propertyIncome" : true,
+                         |  "businessData" : [ {
+                         |    "tradingName" : "Royal Bergentronic Group",
+                         |    "businessAddressDetails" : {
+                         |      "addressLine1" : "85 Thurlby Way",
+                         |      "addressLine2" : "The Knight House",
+                         |      "addressLine3" : "Aberdeen",
+                         |      "addressLine4" : "AB45 0CJ",
+                         |      "postalCode" : "WV34 8JW",
+                         |      "countryCode" : "GB"
+                         |    }
+                         |  }]
+                         |}
+           """.stripMargin)
+        )
+    )
 
   def givenBusinessDetailsExistsNoKF(nino: String) =
     stubFor(
       get(urlPathEqualTo(s"/registration/business-details/nino/$nino"))
         .withHeader("X-Session-ID", equalTo("1234567890"))
-        .willReturn(aResponse().withStatus(200).withBody(s"""
-                                                            |{
-                                                            |  "safeId" : "XW0007448578742",
-                                                            |  "nino" : "AB104897B",
-                                                            |  "mtdbsa" : "WVNQ79994005359",
-                                                            |  "propertyIncome" : true,
-                                                            |  "businessData" : [ {
-                                                            |    "tradingName" : "Royal Bergentronic Group",
-                                                            |    "businessAddressDetails" : {
-                                                            |      "addressLine1" : "85 Thurlby Way",
-                                                            |      "addressLine2" : "The Knight House",
-                                                            |      "addressLine3" : "Aberdeen",
-                                                            |      "addressLine4" : "AB45 0CJ",
-                                                            |      "countryCode" : "GB"
-                                                            |    }
-                                                            |  }]
-                                                            |}
-           """.stripMargin)))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |{
+                         |  "safeId" : "XW0007448578742",
+                         |  "nino" : "AB104897B",
+                         |  "mtdbsa" : "WVNQ79994005359",
+                         |  "propertyIncome" : true,
+                         |  "businessData" : [ {
+                         |    "tradingName" : "Royal Bergentronic Group",
+                         |    "businessAddressDetails" : {
+                         |      "addressLine1" : "85 Thurlby Way",
+                         |      "addressLine2" : "The Knight House",
+                         |      "addressLine3" : "Aberdeen",
+                         |      "addressLine4" : "AB45 0CJ",
+                         |      "countryCode" : "GB"
+                         |    }
+                         |  }]
+                         |}
+           """.stripMargin)
+        )
+    )
 
 }

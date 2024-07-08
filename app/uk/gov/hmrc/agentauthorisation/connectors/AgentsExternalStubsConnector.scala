@@ -34,11 +34,11 @@ import javax.inject.{Inject, Named, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AgentsExternalStubsConnector @Inject()(
+class AgentsExternalStubsConnector @Inject() (
   @Named("agents-external-stubs-baseUrl") baseUrl: URL,
   http: HttpClient,
-  metrics: Metrics)
-    extends HttpAPIMonitor {
+  metrics: Metrics
+) extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
@@ -46,15 +46,15 @@ class AgentsExternalStubsConnector @Inject()(
     http
       .POST[JsObject, HttpResponse](
         s"$baseUrl/agents-external-stubs/sign-in",
-        Json.obj("planetId" -> "hmrc", "userId" -> userId))
-      .map(
-        response =>
-          (
-            response
-              .header(HeaderNames.AUTHORIZATION)
-              .getOrElse(throw new Exception("Missing Authorization token")),
-            response.header("X-Session-ID").getOrElse(throw new Exception("Missing X-Session-ID token")),
-            response.header(HeaderNames.LOCATION).getOrElse(throw new Exception("User location URI not found"))
+        Json.obj("planetId" -> "hmrc", "userId" -> userId)
+      )
+      .map(response =>
+        (
+          response
+            .header(HeaderNames.AUTHORIZATION)
+            .getOrElse(throw new Exception("Missing Authorization token")),
+          response.header("X-Session-ID").getOrElse(throw new Exception("Missing X-Session-ID token")),
+          response.header(HeaderNames.LOCATION).getOrElse(throw new Exception("User location URI not found"))
         )
       )
 
@@ -77,7 +77,7 @@ class AgentsExternalStubsConnector @Inject()(
   def getUserIdForEnrolment(enrolmentKey: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
     http
       .GET[HttpResponse](s"$baseUrl/agents-external-stubs/known-facts/${UriEncoding
-        .encodePathSegment(enrolmentKey, StandardCharsets.UTF_8.name)}")
+          .encodePathSegment(enrolmentKey, StandardCharsets.UTF_8.name)}")
       .map { response =>
         (response.json \ "user" \ "userId").as[String]
       }
@@ -85,30 +85,35 @@ class AgentsExternalStubsConnector @Inject()(
   def getUserIdForNino(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
     http
       .GET[HttpResponse](s"$baseUrl/agents-external-stubs/users/nino/${UriEncoding
-        .encodePathSegment(nino, StandardCharsets.UTF_8.name)}")
+          .encodePathSegment(nino, StandardCharsets.UTF_8.name)}")
       .map { response =>
         (response.json \ "userId").as[String]
       }
 
   def getBusinessDetails(
-    nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[BusinessDetails]] =
+    nino: Nino
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[BusinessDetails]] =
     getWithDesHeaders[BusinessDetails](
       "getRegistrationBusinessDetailsByNino",
-      new URL(baseUrl, s"/registration/business-details/nino/${encodePathSegment(nino.value)}").toString)
+      new URL(baseUrl, s"/registration/business-details/nino/${encodePathSegment(nino.value)}").toString
+    )
 
   def getVatCustomerInformation(
-    vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[VatCustomerInfo]] = {
+    vrn: Vrn
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[VatCustomerInfo]] = {
     val url = new URL(baseUrl, s"/vat/customer/vrn/${encodePathSegment(vrn.value)}/information")
     getWithDesHeaders[VatCustomerInfo]("GetVatCustomerInformation", url.toString)
   }
 
-  private def getWithDesHeaders[T: HttpReads](apiName: String, url: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[T]] = {
+  private def getWithDesHeaders[T: HttpReads](apiName: String, url: String)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[Option[T]] = {
     val desHeaderCarrier =
       hc.copy(
         authorization = Some(Authorization(s"Bearer 123")),
-        extraHeaders = hc.extraHeaders :+ "Environment" -> "test")
+        extraHeaders = hc.extraHeaders :+ "Environment" -> "test"
+      )
     http.GET[Option[T]](url)(implicitly[HttpReads[Option[T]]], desHeaderCarrier, ec)
   }
 
