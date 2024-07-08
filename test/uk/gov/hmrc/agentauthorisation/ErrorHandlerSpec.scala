@@ -16,17 +16,18 @@
 
 package uk.gov.hmrc.agentauthorisation
 
-import akka.actor.ActorSystem
-import org.mockito.ArgumentMatchers._
+import org.apache.pekko.actor.ActorSystem
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar._
 import play.api.Configuration
 import play.api.libs.json.Json
+import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentauthorisation.controllers.ErrorResponse._
 import uk.gov.hmrc.agentauthorisation.support.BaseISpec
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
+import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.bootstrap.config.HttpAuditEvent
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -34,26 +35,27 @@ import scala.concurrent.Future
 
 class ErrorHandlerSpec extends BaseISpec {
   trait BaseSetup {
-    implicit val sys = ActorSystem("MyTest")
-    implicit val configuration = Configuration(
+    implicit val sys: ActorSystem = ActorSystem("MyTest")
+    implicit val configuration: Configuration = Configuration(
       "bootstrap.errorHandler.warnOnly.statusCodes"     -> List.empty,
       "bootstrap.errorHandler.suppress4xxErrorMessages" -> false,
       "bootstrap.errorHandler.suppress5xxErrorMessages" -> false
     )
 
-    implicit val fakeRequest = FakeRequest()
-    val mockAuditConnector = mock[AuditConnector]
-    val mockAuditResult = mock[AuditResult]
-    val mockHttpAuditEvent = mock[HttpAuditEvent]
+    implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+    val mockAuditConnector: AuditConnector = mock[AuditConnector]
+    val mockAuditResult: AuditResult = mock[AuditResult]
+    val mockHttpAuditEvent: HttpAuditEvent = mock[HttpAuditEvent]
+    val data: DataEvent = app.injector.instanceOf[DataEvent]
 
-    when(mockAuditConnector.sendEvent(any())(any(), any())).thenReturn(Future.successful(mockAuditResult))
+    when(mockAuditConnector.sendEvent(data)).thenReturn(Future.successful(mockAuditResult))
 
     val errorHandler = new ErrorHandler(mockAuditConnector, mockHttpAuditEvent)
   }
 
   "onClientError" should {
     class Setup(statusCode: Int) extends BaseSetup {
-      val response = errorHandler.onClientError(fakeRequest, statusCode, "A message")
+      val response: Future[Result] = errorHandler.onClientError(fakeRequest, statusCode, "A message")
     }
 
     "return ErrorNotFound on 404 Not Found" in new Setup(NOT_FOUND) {
@@ -75,7 +77,8 @@ class ErrorHandlerSpec extends BaseISpec {
 
   "onServerError" should {
     "return ErrorInternalServerError" in new BaseSetup {
-      val response = errorHandler.onServerError(fakeRequest, new RuntimeException("Internal Server Error"))
+      val response: Future[Result] =
+        errorHandler.onServerError(fakeRequest, new RuntimeException("Internal Server Error"))
 
       contentAsJson(response) shouldBe contentAsJson(Future.successful(standardInternalServerError))
     }

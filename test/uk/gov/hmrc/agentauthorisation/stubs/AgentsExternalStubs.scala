@@ -26,7 +26,7 @@ trait AgentsExternalStubs {
     givenUserAuthenticatedInStubs("ITSAClient001")
   }
 
-  def givenUserAuthenticatedInStubs(userId: String): Unit =
+  def givenUserAuthenticatedInStubs(userId: String): Unit = {
     stubFor(
       post(urlEqualTo(s"/agents-external-stubs/sign-in"))
         .withRequestBody(equalToJson(s"""{"planetId":"hmrc","userId":"$userId"}""", true, true))
@@ -38,8 +38,10 @@ trait AgentsExternalStubs {
             .withHeader("X-Session-ID", s"BAR-$userId")
         )
     )
+    ()
+  }
 
-  def givenClientEnrolmentExistsInStubs(enrolmentKey: String, userId: String): Unit =
+  def givenClientEnrolmentExistsInStubs(enrolmentKey: String, userId: String): Unit = {
     stubFor(
       get(urlEqualTo(s"/agents-external-stubs/known-facts/$enrolmentKey"))
         .willReturn(
@@ -57,4 +59,6 @@ trait AgentsExternalStubs {
                          |}""".stripMargin)
         )
     )
+    ()
+  }
 }

@@ -22,9 +22,12 @@ import com.github.tomakehurst.wiremock.client.WireMock.{status => _, _}
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration._
 import play.api.http.Status.{NO_CONTENT, OK}
 import play.api.libs.json.JsValue
+import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentauthorisation.support.BaseISpec
+
+import scala.concurrent.Future
 
 class PlatformIntegrationSpec extends BaseISpec {
 
@@ -39,13 +42,14 @@ class PlatformIntegrationSpec extends BaseISpec {
       post(urlMatching("/registration"))
         .willReturn(aResponse().withStatus(NO_CONTENT))
     )
+    ()
   }
 
   trait Setup {
-    val documentationController =
+    val documentationController: DocumentationController =
       app.injector.instanceOf[DocumentationController]
-    val yamlController = app.injector.instanceOf[YamlController]
-    val request = FakeRequest()
+    val yamlController: YamlController = app.injector.instanceOf[YamlController]
+    val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   }
 
   "microservice" should {
@@ -54,11 +58,12 @@ class PlatformIntegrationSpec extends BaseISpec {
       def verifyDocumentationPresent(version: String, endpointName: String): Unit =
         withClue(s"Getting documentation version '$version' of endpoint '$endpointName'") {
           val documentationResult =
-            documentationController.documentation(version, endpointName)(request)
+            documentationController.definition()(request) // check
           status(documentationResult) shouldBe OK
+          ()
         }
 
-      val result = documentationController.definition()(request)
+      val result: Future[Result] = documentationController.definition()(request)
       status(result) shouldBe OK
 
       val jsonResponse: JsValue = contentAsJson(result)

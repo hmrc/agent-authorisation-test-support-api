@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentauthorisation.support
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import org.scalatest.{BeforeAndAfterAll, Suite}
 
 /** Provides an implicit Materializer for use in tests. Note that if your test is starting an app (e.g. via
@@ -24,10 +24,11 @@ import org.scalatest.{BeforeAndAfterAll, Suite}
   */
 trait AkkaMaterializerSpec extends BaseISpec with BeforeAndAfterAll { this: Suite =>
 
-  implicit lazy val actorSystem = ActorSystem()
+  implicit lazy val actorSystem: ActorSystem = ActorSystem()
 
   override protected def afterAll(): Unit = {
     super.afterAll()
     actorSystem.terminate().futureValue
+    ()
   }
 }

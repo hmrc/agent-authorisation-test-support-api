@@ -80,6 +80,7 @@ class ApiPlatformISpec extends BaseISpec with GuiceOneServerPerSuite {
       withClue(s"YAML does not contain a matching version declaration of [$version]") {
         yaml should include(s"""version: '$version'""")
       }
+      ()
     }
   }
 }

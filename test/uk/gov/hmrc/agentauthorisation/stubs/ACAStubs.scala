@@ -36,7 +36,7 @@ trait ACAStubs {
     service: String,
     serviceIdentifier: String,
     knownFact: String
-  ): Unit =
+  ): Unit = {
     stubFor(
       post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
         .withRequestBody(equalToJson(s"""
@@ -56,8 +56,10 @@ trait ACAStubs {
             )
         )
     )
+    ()
+  }
 
-  def failedCreateInvitation(arn: Arn): Unit =
+  def failedCreateInvitation(arn: Arn): Unit = {
     stubFor(
       post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
         .willReturn(
@@ -65,8 +67,10 @@ trait ACAStubs {
             .withStatus(400)
         )
     )
+    ()
+  }
 
-  def createAgentLink(clientType: String, normalisedAgentName: String): Unit =
+  def createAgentLink(clientType: String, normalisedAgentName: String): Unit = {
     stubFor(
       post(urlEqualTo(s"/agent-client-authorisation/agencies/references/arn/${arn.value}/clientType/$clientType"))
         .willReturn(
@@ -75,6 +79,8 @@ trait ACAStubs {
             .withHeader("location", s"/invitations/$clientType/12345678/$normalisedAgentName")
         )
     )
+    ()
+  }
 
   def givenMatchingClientIdAndPostcode(nino: Nino, postcode: String) =
     stubFor(
@@ -172,7 +178,7 @@ trait ACAStubs {
     invitationId: String,
     service: String,
     status: String
-  ): Unit =
+  ): Unit = {
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/invitations/$invitationId"))
         .willReturn(
@@ -202,6 +208,8 @@ trait ACAStubs {
             )
         )
     )
+    ()
+  }
 
   def givenGetAgentInvitationStubReturns(arn: Arn, invitationId: InvitationId, status: Int) =
     stubFor(
@@ -244,7 +252,7 @@ trait ACAStubs {
        |  }
        |}""".stripMargin
 
-  def givenInvitationNotFound(arn: Arn, invitationId: String): Unit =
+  def givenInvitationNotFound(arn: Arn, invitationId: String): Unit = {
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/invitations/$invitationId"))
         .willReturn(
@@ -252,6 +260,8 @@ trait ACAStubs {
             .withStatus(404)
         )
     )
+    ()
+  }
 
   def givenRejectInvitationStub(
     invitationId: String,
