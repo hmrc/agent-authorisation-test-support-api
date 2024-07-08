@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.agentauthorisation
 
+import play.api.OptionalDevContext
 import play.api.http.{DefaultHttpRequestHandler, HttpConfiguration, HttpErrorHandler, HttpFilters}
 import play.api.mvc.{Handler, RequestHeader}
 import play.api.routing.Router
 import play.core.DefaultWebCommands
 
-import javax.inject.Inject
+import javax.inject.{Inject, Provider}
 
 /** Normalise the request path. The API platform strips the context '/agents' from the URL before forwarding the
   * request. Re-add it here if necessary.
@@ -33,11 +34,11 @@ class ApiPlatformRequestHandler @Inject() (
   filters: HttpFilters
 ) extends DefaultHttpRequestHandler(
       new DefaultWebCommands,
-      None,
-      router,
+      new OptionalDevContext(None),
+      new Provider[Router] { override def get(): Router = router },
       errorHandler,
       configuration,
-      filters.filters
+      filters
     ) {
 
   val context = "/agent-authorisation-test-support"
