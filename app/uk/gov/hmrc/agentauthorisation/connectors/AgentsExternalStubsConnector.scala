@@ -16,17 +16,16 @@
 
 package uk.gov.hmrc.agentauthorisation.connectors
 
-import com.codahale.metrics.MetricRegistry
-import com.kenshoo.play.metrics.Metrics
 import play.api.http.HeaderNames
 import play.api.libs.json.{JsObject, Json}
 import play.utils.UriEncoding
-import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentauthorisation.models.{BusinessDetails, User, VatCustomerInfo}
+import uk.gov.hmrc.agentauthorisation.util.HttpAPIMonitor
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient, HttpReads, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
 import java.net.URL
 import java.nio.charset.StandardCharsets
@@ -37,10 +36,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class AgentsExternalStubsConnector @Inject() (
   @Named("agents-external-stubs-baseUrl") baseUrl: URL,
   http: HttpClient,
-  metrics: Metrics
-) extends HttpAPIMonitor {
-
-  override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
+  val metrics: Metrics
+)(implicit val ec: ExecutionContext)
+    extends HttpAPIMonitor {
 
   def signIn(userId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[(String, String, String)] =
     http

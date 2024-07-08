@@ -17,16 +17,13 @@
 package uk.gov.hmrc.agentauthorisation.connectors
 
 import java.net.URL
-
-import com.codahale.metrics.MetricRegistry
-import com.kenshoo.play.metrics.Metrics
 import javax.inject.{Inject, Named, Singleton}
 import java.time.format.DateTimeFormatter
-
-import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentauthorisation.models.Invitation
+import uk.gov.hmrc.agentauthorisation.util.HttpAPIMonitor
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -34,12 +31,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class InvitationsConnector @Inject() (
   @Named("agent-client-authorisation-baseUrl") baseUrl: URL,
   http: HttpPost with HttpGet with HttpPut,
-  metrics: Metrics
-) extends HttpAPIMonitor {
+  val metrics: Metrics
+)(implicit val ec: ExecutionContext)
+    extends HttpAPIMonitor {
 
-  override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
-
-  def getInvitation(invitationId: String)(implicit headerCarrier: HeaderCarrier, executionContext: ExecutionContext) =
+  def getInvitation(invitationId: String)(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext) =
     monitor(s"ConsumedAPI-Get-Invitation-GET") {
       http.GET[Option[Invitation]](new URL(baseUrl, s"/agent-client-authorisation/invitations/$invitationId").toString)
     }.recoverWith { case _: NotFoundException =>
@@ -48,7 +44,7 @@ class InvitationsConnector @Inject() (
 
   def acceptInvitation(invitationId: String, clientIdentifier: String, clientIdentifierType: String)(implicit
     headerCarrier: HeaderCarrier,
-    executionContext: ExecutionContext
+    ec: ExecutionContext
   ): Future[Option[Int]] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       http
