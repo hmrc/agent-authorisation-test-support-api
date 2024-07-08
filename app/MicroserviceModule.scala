@@ -45,6 +45,7 @@ class MicroserviceModule(val environment: Environment, val configuration: Config
     bind(classOf[HttpPut]).to(classOf[DefaultHttpClient])
 
     bindSeqStringProperty("api.supported-versions")
+    ()
   }
 
   val servicesConfig: ServicesConfig = new ServicesConfig(configuration)

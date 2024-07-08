@@ -9,7 +9,9 @@ object AppDependencies {
     ws,
     "uk.gov.hmrc" %% "bootstrap-backend-play-30" % bootstrapVersion,
     "uk.gov.hmrc"       %% "agent-mtd-identifiers"     % "2.0.0",
-    "com.typesafe.play" %% "play-json"                 % "2.9.4"
+    "com.typesafe.play" %% "play-json"                 % "2.9.4",
+    "uk.gov.hmrc"       %% "play-hmrc-api-play-30"     % "8.0.0",
+    "com.github.blemale" %% "scaffeine"                % "5.2.1"
   )
 
   def test = Seq(

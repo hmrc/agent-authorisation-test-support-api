@@ -15,7 +15,7 @@
  */
 
 package uk.gov.hmrc.agentauthorisation.models
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
 case class Invitation(
@@ -29,5 +29,5 @@ case class Invitation(
 )
 
 object Invitation {
-  implicit val formats = Json.format[Invitation]
+  implicit val formats: OFormat[Invitation] = Json.format[Invitation]
 }
