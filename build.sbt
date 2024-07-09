@@ -5,18 +5,6 @@ val appName = "agent-authorisation-test-support-api"
 ThisBuild / majorVersion := 1
 ThisBuild / scalaVersion := "2.13.12"
 
-lazy val scoverageSettings = {
-  import scoverage.ScoverageKeys
-  Seq(
-    // Semicolon-separated list of regexs matching classes to exclude
-    ScoverageKeys.coverageExcludedPackages := """uk\.gov\.hmrc\.BuildInfo;.*\.Routes;.*\.RoutesPrefix;.*Filters?;MicroserviceAuditConnector;Module;GraphiteStartUp;.*\.Reverse[^.]*""",
-    ScoverageKeys.coverageMinimumStmtTotal := 80.00,
-    ScoverageKeys.coverageFailOnMinimum := true,
-    ScoverageKeys.coverageHighlighting := true,
-    Test / parallelExecution := false
-  )
-}
-
 val scalaCOptions = Seq(
   "-Xfatal-warnings",
   "-Xlint:-missing-interpolator,_",
@@ -46,7 +34,7 @@ lazy val root = (project in file("."))
   )
   .settings(
     Test / parallelExecution := false,
-    scoverageSettings
+    CodeCoverageSettings.scoverageSettings
   )
   .enablePlugins(PlayScala, SbtDistributablesPlugin)
   .disablePlugins(JUnitXmlReportPlugin)
