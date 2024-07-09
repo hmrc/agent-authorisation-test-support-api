@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentauthorisation
 
 import org.apache.pekko.actor.ActorSystem
-import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar._
 import play.api.Configuration
 import play.api.libs.json.Json
@@ -27,7 +26,6 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentauthorisation.controllers.ErrorResponse._
 import uk.gov.hmrc.agentauthorisation.support.BaseISpec
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
-import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.bootstrap.config.HttpAuditEvent
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -39,16 +37,14 @@ class ErrorHandlerSpec extends BaseISpec {
     implicit val configuration: Configuration = Configuration(
       "bootstrap.errorHandler.warnOnly.statusCodes"     -> List.empty,
       "bootstrap.errorHandler.suppress4xxErrorMessages" -> false,
-      "bootstrap.errorHandler.suppress5xxErrorMessages" -> false
+      "bootstrap.errorHandler.suppress5xxErrorMessages" -> false,
+      "auditing.enabled"                                -> false
     )
 
     implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
     val mockAuditConnector: AuditConnector = mock[AuditConnector]
     val mockAuditResult: AuditResult = mock[AuditResult]
     val mockHttpAuditEvent: HttpAuditEvent = mock[HttpAuditEvent]
-    val data: DataEvent = app.injector.instanceOf[DataEvent]
-
-    when(mockAuditConnector.sendEvent(data)).thenReturn(Future.successful(mockAuditResult))
 
     val errorHandler = new ErrorHandler(mockAuditConnector, mockHttpAuditEvent)
   }

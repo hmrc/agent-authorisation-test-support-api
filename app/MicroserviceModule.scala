@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-import java.net.URL
-
-import com.google.inject.{AbstractModule, TypeLiteral}
 import com.google.inject.name.Names
-import javax.inject.Provider
+import com.google.inject.{AbstractModule, TypeLiteral}
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
+import java.net.URL
+import javax.inject.Provider
 
 class MicroserviceModule(val environment: Environment, val configuration: Configuration) extends AbstractModule {
 
@@ -38,11 +36,6 @@ class MicroserviceModule(val environment: Environment, val configuration: Config
 
     bindBaseUrl("agents-external-stubs")
     bindBaseUrl("agent-client-authorisation")
-
-    bind(classOf[CorePost]).to(classOf[DefaultHttpClient])
-    bind(classOf[HttpGet]).to(classOf[DefaultHttpClient])
-    bind(classOf[HttpPost]).to(classOf[DefaultHttpClient])
-    bind(classOf[HttpPut]).to(classOf[DefaultHttpClient])
 
     bindSeqStringProperty("api.supported-versions")
     ()
