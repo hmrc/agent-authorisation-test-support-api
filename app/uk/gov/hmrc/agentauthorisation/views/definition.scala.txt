@@ -3,7 +3,6 @@
 
 @(access: ApiAccess)
 {
-  "scopes":[],
   "api": {
     "name": "Agent Authorisation Test Support",
     "description": "The Agent Authorisation Test Support API provides test-only ability to accept or reject an authorisation request created with Agent Authorisation API POST /agents/:arn/invitations.",
