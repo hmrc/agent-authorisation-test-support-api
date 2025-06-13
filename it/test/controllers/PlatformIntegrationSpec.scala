@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentauthorisation.controllers
+package controllers
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
@@ -25,7 +25,8 @@ import play.api.libs.json.JsValue
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentauthorisation.support.BaseISpec
+import support.BaseISpec
+import uk.gov.hmrc.agentauthorisation.controllers.{DocumentationController, YamlController}
 
 import scala.concurrent.Future
 
@@ -46,8 +47,7 @@ class PlatformIntegrationSpec extends BaseISpec {
   }
 
   trait Setup {
-    val documentationController: DocumentationController =
-      app.injector.instanceOf[DocumentationController]
+    val documentationController: DocumentationController = app.injector.instanceOf[DocumentationController]
     val yamlController: YamlController = app.injector.instanceOf[YamlController]
     val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   }
@@ -57,8 +57,7 @@ class PlatformIntegrationSpec extends BaseISpec {
     "provide definition endpoint and documentation endpoint for each api" in new Setup {
       def verifyDocumentationPresent(version: String, endpointName: String): Unit =
         withClue(s"Getting documentation version '$version' of endpoint '$endpointName'") {
-          val documentationResult =
-            documentationController.definition()(request) // check
+          val documentationResult = documentationController.definition()(request) // check
           status(documentationResult) shouldBe OK
           ()
         }
@@ -86,7 +85,7 @@ class PlatformIntegrationSpec extends BaseISpec {
     }
 
     "provide yaml documentation" in new Setup {
-      val result = yamlController.yaml("1.0", "application.yaml")(request)
+      val result: Future[Result] = yamlController.yaml("1.0", "application.yaml")(request)
 
       status(result) shouldBe OK
       contentAsString(result) should startWith("openapi: 3.0.3")

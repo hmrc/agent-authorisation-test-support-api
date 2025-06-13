@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentauthorisation.controllers
+package controllers
 
 import play.api.libs.json.JsValue
 import play.api.libs.ws.WSClient
 import play.utils.UriEncoding
 import ApiTestSupport.Endpoint
-import uk.gov.hmrc.agentauthorisation.support.Resource
+import support.Resource
 import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.ExecutionContext
@@ -41,7 +41,7 @@ abstract class ApiTestSupport(implicit ws: WSClient, ec: ExecutionContext) {
   private val xmlDocumentationPath = "/api/documentation"
   private val yamlPath = "/api/conf"
 
-  private def definitionsJson = new Resource(definitionPath.toString, runningPort).get().json
+  private def definitionsJson = new Resource(definitionPath, runningPort).get().json
 
   private val DefinitionsFileApiSection = (definitionsJson \ "api").as[JsValue]
   private val DefinitionsFileApiVersions: List[JsValue] = (DefinitionsFileApiSection \ "versions").as[List[JsValue]]

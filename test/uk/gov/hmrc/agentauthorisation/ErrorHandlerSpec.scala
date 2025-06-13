@@ -17,6 +17,8 @@
 package uk.gov.hmrc.agentauthorisation
 
 import org.apache.pekko.actor.ActorSystem
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.mockito.MockitoSugar._
 import play.api.Configuration
 import play.api.libs.json.Json
@@ -24,14 +26,14 @@ import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentauthorisation.controllers.ErrorResponse._
-import uk.gov.hmrc.agentauthorisation.support.BaseISpec
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.bootstrap.config.HttpAuditEvent
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ErrorHandlerSpec extends BaseISpec {
+class ErrorHandlerSpec extends AnyWordSpecLike with Matchers {
+
   trait BaseSetup {
     implicit val sys: ActorSystem = ActorSystem("MyTest")
     implicit val configuration: Configuration = Configuration(

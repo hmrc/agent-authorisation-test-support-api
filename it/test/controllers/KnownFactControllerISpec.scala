@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentauthorisation.controllers
+package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{status => _, _}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.mvc.Http.HeaderNames
-import uk.gov.hmrc.agentauthorisation.support.BaseISpec
+import support.BaseISpec
+import uk.gov.hmrc.agentauthorisation.controllers.KnownFactController
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
 
@@ -32,7 +34,7 @@ class KnownFactControllerISpec extends BaseISpec {
   val vrn = "703850256"
   val nino = "AB104897B"
 
-  val fakeRequest =
+  val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
     FakeRequest().withHeaders("Accept" -> s"application/vnd.hmrc.1.0+json")
 
   "KnownFactController" should {

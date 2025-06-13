@@ -28,8 +28,8 @@ import javax.inject.{Inject, Named, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class InvitationsConnector @Inject() (
-  @Named("agent-client-authorisation-baseUrl") baseUrl: URL,
+class AgentClientRelationshipsConnector @Inject() (
+  @Named("agent-client-relationships-baseUrl") baseUrl: URL,
   http: HttpClientV2,
   val metrics: Metrics
 )(implicit val ec: ExecutionContext)
@@ -39,50 +39,37 @@ class InvitationsConnector @Inject() (
     invitationId: String
   )(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Option[Invitation]] =
     monitor(s"ConsumedAPI-Get-Invitation-GET") {
-      http.get(new URL(baseUrl, s"/agent-client-authorisation/invitations/$invitationId")).execute[Option[Invitation]]
-    }.recoverWith { case _: NotFoundException =>
-      Future successful None
+      val requestUrl = s"$baseUrl/test-only/invitation/$invitationId"
+      http
+        .get(url"$requestUrl")
+        .execute[Option[Invitation]]
     }
 
-  def acceptInvitation(invitationId: String, clientIdentifier: String, clientIdentifierType: String)(implicit
+  def acceptInvitation(invitationId: String)(implicit
     headerCarrier: HeaderCarrier,
     ec: ExecutionContext
   ): Future[Option[Int]] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
+      val requestUrl = s"$baseUrl/agent-client-relationships/authorisation-response/accept/$invitationId"
       http
-        .put(
-          new URL(
-            baseUrl,
-            s"/agent-client-authorisation/clients/${clientIdentifierType.toUpperCase}/$clientIdentifier/invitations/received/$invitationId/accept"
-          )
-        )
-        .withBody("")
+        .put(url"$requestUrl")
         .execute[HttpResponse]
         .map(response => Some(response.status))
-    }.recover {
-      case _: NotFoundException      => Some(404)
-      case ex: UpstreamErrorResponse => Some(ex.statusCode)
-      case _                         => Some(403)
+    }.recover { case ex: UpstreamErrorResponse =>
+      Some(ex.statusCode)
     }
 
-  def rejectInvitation(invitationId: String, clientIdentifier: String, clientIdentifierType: String)(implicit
+  def rejectInvitation(invitationId: String)(implicit
     headerCarrier: HeaderCarrier,
     ec: ExecutionContext
   ): Future[Option[Int]] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
+      val requestUrl = s"$baseUrl/agent-client-relationships/client/authorisation-response/reject/$invitationId"
       http
-        .put(
-          new URL(
-            baseUrl,
-            s"/agent-client-authorisation/clients/${clientIdentifierType.toUpperCase}/$clientIdentifier/invitations/received/$invitationId/reject"
-          )
-        )
-        .withBody("")
+        .put(url"$requestUrl")
         .execute[HttpResponse]
         .map(response => Some(response.status))
-    }.recover {
-      case _: NotFoundException      => Some(404)
-      case ex: UpstreamErrorResponse => Some(ex.statusCode)
-      case _                         => Some(403)
+    }.recover { case ex: UpstreamErrorResponse =>
+      Some(ex.statusCode)
     }
 }

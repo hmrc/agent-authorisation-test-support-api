@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentauthorisation.support
+package support
 
-import java.net.{ServerSocket, URL}
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
@@ -24,6 +23,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration._
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 import play.api.Logger
 
+import java.net.{ServerSocket, URL}
 import scala.annotation.tailrec
 
 case class WireMockBaseUrl(value: URL)

@@ -73,16 +73,6 @@ class AgentsExternalStubsConnector @Inject() (
         case e: UpstreamErrorResponse if e.statusCode == 409 => ()
       }
 
-  def updateCurrentUser(user: User)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
-    http
-      .put(new URL(s"$baseUrl/agents-external-stubs/users"))
-      .withBody(Json.toJson(user))
-      .execute[HttpResponse]
-      .map(_ => ())
-      .recover {
-        case e: UpstreamErrorResponse if e.statusCode == 409 => ()
-      }
-
   def getUserIdForEnrolment(enrolmentKey: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
     http
       .get(new URL(s"$baseUrl/agents-external-stubs/known-facts/${UriEncoding

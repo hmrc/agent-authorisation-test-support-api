@@ -16,18 +16,25 @@
 
 package uk.gov.hmrc.agentauthorisation
 
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.Materializer
+import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.mvc.Results._
-import play.api.mvc.{Call, RequestHeader, Result}
+import play.api.mvc.{AnyContentAsEmpty, Call, RequestHeader, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentauthorisation.support.BaseISpec
 
 import scala.concurrent.Future
 
-class AcceptHeaderFilterSpec extends BaseISpec {
+class AcceptHeaderFilterSpec extends AnyWordSpecLike with Matchers {
+
+  lazy val system: ActorSystem = ActorSystem()
+  implicit lazy val materializer: Materializer = Materializer(system)
 
   case class TestAcceptHeaderFilter(supportedVersion: Seq[String]) extends AcceptHeaderFilter(supportedVersion) {
-    def response(f: RequestHeader => Future[Result])(rh: RequestHeader) = super.apply(f)(rh)
+    def response(f: RequestHeader => Future[Result])(rh: RequestHeader): Future[Result] = super.apply(f)(rh)
   }
 
   object TestAcceptHeaderFilter {
@@ -35,12 +42,13 @@ class AcceptHeaderFilterSpec extends BaseISpec {
     val testHeaderVersion: String => Seq[(String, String)] =
       (testVersion: String) => Seq("Accept" -> s"application/vnd.hmrc.$testVersion+json")
 
-    def fakeHeaders(headers: Seq[(String, String)]) = FakeRequest().withHeaders(headers: _*)
+    def fakeHeaders(headers: Seq[(String, String)]): FakeRequest[AnyContentAsEmpty.type] =
+      FakeRequest().withHeaders(headers: _*)
 
-    def fakeHeaders(call: Call, headers: Seq[(String, String)]) =
+    def fakeHeaders(call: Call, headers: Seq[(String, String)]): FakeRequest[AnyContentAsEmpty.type] =
       FakeRequest(call).withHeaders(headers: _*)
 
-    def toResult(result: Result) = (_: RequestHeader) => Future.successful(result)
+    def toResult(result: Result): RequestHeader => Future[Result] = (_: RequestHeader) => Future.successful(result)
   }
 
   import TestAcceptHeaderFilter._

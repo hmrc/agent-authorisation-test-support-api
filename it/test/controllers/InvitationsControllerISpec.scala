@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentauthorisation.controllers
+package controllers
 
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentauthorisation.stubs.{ACAStubs, AgentsExternalStubs, TestIdentifiers}
-import uk.gov.hmrc.agentauthorisation.support.BaseISpec
+import stubs.{ACRStubs, AgentsExternalStubs, TestIdentifiers}
+import support.BaseISpec
+import uk.gov.hmrc.agentauthorisation.controllers.InvitationsController
 
-class InvitationsControllerISpec extends BaseISpec with ACAStubs with AgentsExternalStubs with TestIdentifiers {
+class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExternalStubs with TestIdentifiers {
 
   val controller: InvitationsController = app.injector.instanceOf[InvitationsController]
 
@@ -35,54 +36,54 @@ class InvitationsControllerISpec extends BaseISpec with ACAStubs with AgentsExte
 
       "return 204 for successfully accepting an invitation" in {
         givenITSAUserAuthenticatedInStubs()
-        givenGetITSAInvitationStub(arn, "Pending")
-        givenAcceptInvitationStub(invitationIdITSA, mtdItId.value, identifierITSA, 204)
+        givenItsaInvitationExists("Pending")
+        givenAcceptInvitation(invitationIdITSA, 204)
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 204
       }
 
       "return 204 for successfully accepting an invitation (alt ITSA)" in {
         givenITSAUserAuthenticatedInStubs()
-        givenGetITSAInvitationStub(arn, "Pending", altItsa = true)
+        givenAltItsaInvitationExists("Pending")
         givenUserIdForNino(nino)
-        givenAcceptInvitationStub(invitationIdITSA, nino, identifierAltITSA.toUpperCase, 204)
+        givenAcceptInvitation(invitationIdITSA, 204)
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 204
       }
 
       "return 204 for accepting already accepted invitation" in {
         givenITSAUserAuthenticatedInStubs()
-        givenGetITSAInvitationStub(arn, "Accepted")
+        givenItsaInvitationExists("Accepted")
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 204
       }
 
       "return 409 for accepting already rejected invitation" in {
         givenITSAUserAuthenticatedInStubs()
-        givenGetITSAInvitationStub(arn, "Rejected")
+        givenItsaInvitationExists("Rejected")
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 409
       }
 
       "return 409 for accepting already expired invitation" in {
         givenITSAUserAuthenticatedInStubs()
-        givenGetITSAInvitationStub(arn, "Expired")
+        givenItsaInvitationExists("Expired")
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 409
       }
 
       "return 404 for unable to find invitation to accept" in {
         givenITSAUserAuthenticatedInStubs()
-        givenInvitationNotFound(arn, invitationIdITSA)
-        givenAcceptInvitationStub(invitationIdITSA, mtdItId.value, identifierITSA, 404)
+        givenInvitationNotFound(invitationIdITSA)
+        givenAcceptInvitation(invitationIdITSA, 404)
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 404
       }
 
       "return 403 for unauthorised to accept invitation" in {
         givenITSAUserAuthenticatedInStubs()
-        givenGetITSAInvitationStub(arn, "Pending")
-        givenAcceptInvitationStub(invitationIdITSA, mtdItId.value, identifierITSA, 403)
+        givenItsaInvitationExists("Pending")
+        givenAcceptInvitation(invitationIdITSA, 403)
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 403
       }
@@ -92,54 +93,54 @@ class InvitationsControllerISpec extends BaseISpec with ACAStubs with AgentsExte
 
       "return 204 for successfully accepting an invitation" in {
         givenITSASuppUserAuthenticatedInStubs()
-        givenGetITSASuppInvitationStub(arn, "Pending")
-        givenAcceptInvitationStub(invitationIdITSA, mtdItId.value, identifierITSA, 204)
+        givenItsaSuppInvitationExists("Pending")
+        givenAcceptInvitation(invitationIdITSA, 204)
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 204
       }
 
       "return 204 for successfully accepting an invitation (alt ITSA)" in {
         givenITSASuppUserAuthenticatedInStubs()
-        givenGetITSASuppInvitationStub(arn, "Pending", altItsa = true)
+        givenAltItsaSuppInvitationExists("Pending")
         givenUserIdForNino(nino)
-        givenAcceptInvitationStub(invitationIdITSA, nino, identifierAltITSA.toUpperCase, 204)
+        givenAcceptInvitation(invitationIdITSA, 204)
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 204
       }
 
       "return 204 for accepting already accepted invitation" in {
         givenITSASuppUserAuthenticatedInStubs()
-        givenGetITSASuppInvitationStub(arn, "Accepted")
+        givenItsaSuppInvitationExists("Accepted")
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 204
       }
 
       "return 409 for accepting already rejected invitation" in {
         givenITSASuppUserAuthenticatedInStubs()
-        givenGetITSASuppInvitationStub(arn, "Rejected")
+        givenItsaSuppInvitationExists("Rejected")
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 409
       }
 
       "return 409 for accepting already expired invitation" in {
         givenITSASuppUserAuthenticatedInStubs()
-        givenGetITSASuppInvitationStub(arn, "Expired")
+        givenItsaSuppInvitationExists("Expired")
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 409
       }
 
       "return 404 for unable to find invitation to accept" in {
         givenITSASuppUserAuthenticatedInStubs()
-        givenInvitationNotFound(arn, invitationIdITSA)
-        givenAcceptInvitationStub(invitationIdITSA, mtdItId.value, identifierITSA, 404)
+        givenInvitationNotFound(invitationIdITSA)
+        givenAcceptInvitation(invitationIdITSA, 404)
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 404
       }
 
       "return 403 for unauthorised to accept invitation" in {
         givenITSASuppUserAuthenticatedInStubs()
-        givenGetITSASuppInvitationStub(arn, "Pending")
-        givenAcceptInvitationStub(invitationIdITSA, mtdItId.value, identifierITSA, 403)
+        givenItsaSuppInvitationExists("Pending")
+        givenAcceptInvitation(invitationIdITSA, 403)
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 403
       }
@@ -149,45 +150,45 @@ class InvitationsControllerISpec extends BaseISpec with ACAStubs with AgentsExte
 
       "return 204 for successfully accepting an invitation" in {
         givenVATUserAuthenticatedInStubs()
-        givenGetVATInvitationStub(arn, "Pending")
-        givenAcceptInvitationStub(invitationIdVAT, validVrn.value, "VRN", 204)
+        givenVatInvitationExists("Pending")
+        givenAcceptInvitation(invitationIdVAT, 204)
         val result = controller.acceptInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 204
       }
 
       "return 204 for accepting already accepted invitation" in {
         givenVATUserAuthenticatedInStubs()
-        givenGetVATInvitationStub(arn, "Accepted")
+        givenVatInvitationExists("Accepted")
         val result = controller.acceptInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 204
       }
 
       "return 409 for accepting already rejected invitation" in {
         givenVATUserAuthenticatedInStubs()
-        givenGetVATInvitationStub(arn, "Rejected")
+        givenVatInvitationExists("Rejected")
         val result = controller.acceptInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 409
       }
 
       "return 409 for accepting already expired invitation" in {
         givenVATUserAuthenticatedInStubs()
-        givenGetVATInvitationStub(arn, "Expired")
+        givenVatInvitationExists("Expired")
         val result = controller.acceptInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 409
       }
 
       "return 404 for unable to find invitation to accept" in {
         givenVATUserAuthenticatedInStubs()
-        givenInvitationNotFound(arn, invitationIdVAT)
-        givenAcceptInvitationStub(invitationIdVAT, validVrn.value, "VRN", 404)
+        givenInvitationNotFound(invitationIdVAT)
+        givenAcceptInvitation(invitationIdVAT, 404)
         val result = controller.acceptInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 404
       }
 
       "return 403 for unauthorised to accept invitation" in {
         givenVATUserAuthenticatedInStubs()
-        givenGetVATInvitationStub(arn, "Pending")
-        givenAcceptInvitationStub(invitationIdVAT, validVrn.value, "VRN", 403)
+        givenVatInvitationExists("Pending")
+        givenAcceptInvitation(invitationIdVAT, 403)
         val result = controller.acceptInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 403
       }
@@ -197,7 +198,7 @@ class InvitationsControllerISpec extends BaseISpec with ACAStubs with AgentsExte
 
       "throw an exception detailing that there was an unsupported service type" in {
         givenUnsupportedRegimeUserInStubs()
-        givenGetUnsupportedInvitationStub(arn, "Pending")
+        givenUnsupportedInvitationExists
         val result = controller.acceptInvitation(invalidInvitationId)(fakeRequest)
         intercept[Exception](status(result)).getMessage shouldBe "Unsupported service type"
       }
@@ -210,54 +211,54 @@ class InvitationsControllerISpec extends BaseISpec with ACAStubs with AgentsExte
 
       "return 204 for successfully rejecting an invitation" in {
         givenITSAUserAuthenticatedInStubs()
-        givenGetITSAInvitationStub(arn, "Pending")
-        givenRejectInvitationStub(invitationIdITSA, mtdItId.value, identifierITSA, 204)
+        givenItsaInvitationExists("Pending")
+        givenRejectInvitation(invitationIdITSA, 204)
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 204
       }
 
       "return 204 for successfully rejecting an invitation (alt ITSA)" in {
         givenITSAUserAuthenticatedInStubs()
-        givenGetITSAInvitationStub(arn, "Pending", altItsa = true)
+        givenAltItsaInvitationExists("Pending")
         givenUserIdForNino(nino)
-        givenRejectInvitationStub(invitationIdITSA, nino, identifierAltITSA.toUpperCase, 204)
+        givenRejectInvitation(invitationIdITSA, 204)
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 204
       }
 
       "return 204 for accepting already rejected invitation" in {
         givenITSAUserAuthenticatedInStubs()
-        givenGetITSAInvitationStub(arn, "Rejected")
+        givenItsaInvitationExists("Rejected")
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 204
       }
 
       "return 409 for accepting already accepted invitation" in {
         givenITSAUserAuthenticatedInStubs()
-        givenGetITSAInvitationStub(arn, "Accepted")
+        givenItsaInvitationExists("Accepted")
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 409
       }
 
       "return 409 for accepting already expired invitation" in {
         givenITSAUserAuthenticatedInStubs()
-        givenGetITSAInvitationStub(arn, "Expired")
+        givenItsaInvitationExists("Expired")
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 409
       }
 
       "return 404 for unable to find invitation to reject" in {
         givenITSAUserAuthenticatedInStubs()
-        givenInvitationNotFound(arn, invitationIdITSA)
-        givenRejectInvitationStub(invitationIdITSA, mtdItId.value, identifierITSA, 404)
+        givenInvitationNotFound(invitationIdITSA)
+        givenRejectInvitation(invitationIdITSA, 404)
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 404
       }
 
       "return 403 for unauthorised to reject invitation" in {
         givenITSAUserAuthenticatedInStubs()
-        givenGetITSAInvitationStub(arn, "Pending")
-        givenRejectInvitationStub(invitationIdITSA, mtdItId.value, identifierITSA, 403)
+        givenItsaInvitationExists("Pending")
+        givenRejectInvitation(invitationIdITSA, 403)
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 403
       }
@@ -267,54 +268,54 @@ class InvitationsControllerISpec extends BaseISpec with ACAStubs with AgentsExte
 
       "return 204 for successfully rejecting an invitation" in {
         givenITSASuppUserAuthenticatedInStubs()
-        givenGetITSASuppInvitationStub(arn, "Pending")
-        givenRejectInvitationStub(invitationIdITSA, mtdItId.value, identifierITSA, 204)
+        givenItsaSuppInvitationExists("Pending")
+        givenRejectInvitation(invitationIdITSA, 204)
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 204
       }
 
       "return 204 for successfully rejecting an invitation (alt ITSA)" in {
         givenITSASuppUserAuthenticatedInStubs()
-        givenGetITSASuppInvitationStub(arn, "Pending", altItsa = true)
+        givenAltItsaSuppInvitationExists("Pending")
         givenUserIdForNino(nino)
-        givenRejectInvitationStub(invitationIdITSA, nino, identifierAltITSA.toUpperCase, 204)
+        givenRejectInvitation(invitationIdITSA, 204)
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 204
       }
 
       "return 204 for accepting already rejected invitation" in {
         givenITSASuppUserAuthenticatedInStubs()
-        givenGetITSASuppInvitationStub(arn, "Rejected")
+        givenItsaSuppInvitationExists("Rejected")
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 204
       }
 
       "return 409 for accepting already accepted invitation" in {
         givenITSASuppUserAuthenticatedInStubs()
-        givenGetITSASuppInvitationStub(arn, "Accepted")
+        givenItsaSuppInvitationExists("Accepted")
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 409
       }
 
       "return 409 for accepting already expired invitation" in {
         givenITSASuppUserAuthenticatedInStubs()
-        givenGetITSASuppInvitationStub(arn, "Expired")
+        givenItsaSuppInvitationExists("Expired")
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 409
       }
 
       "return 404 for unable to find invitation to reject" in {
         givenITSASuppUserAuthenticatedInStubs()
-        givenInvitationNotFound(arn, invitationIdITSA)
-        givenRejectInvitationStub(invitationIdITSA, mtdItId.value, identifierITSA, 404)
+        givenInvitationNotFound(invitationIdITSA)
+        givenRejectInvitation(invitationIdITSA, 404)
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 404
       }
 
       "return 403 for unauthorised to reject invitation" in {
         givenITSASuppUserAuthenticatedInStubs()
-        givenGetITSASuppInvitationStub(arn, "Pending")
-        givenRejectInvitationStub(invitationIdITSA, mtdItId.value, identifierITSA, 403)
+        givenItsaSuppInvitationExists("Pending")
+        givenRejectInvitation(invitationIdITSA, 403)
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 403
       }
@@ -324,45 +325,45 @@ class InvitationsControllerISpec extends BaseISpec with ACAStubs with AgentsExte
 
       "return 204 for successfully rejecting an invitation" in {
         givenVATUserAuthenticatedInStubs()
-        givenGetVATInvitationStub(arn, "Pending")
-        givenRejectInvitationStub(invitationIdVAT, validVrn.value, "VRN", 204)
+        givenVatInvitationExists("Pending")
+        givenRejectInvitation(invitationIdVAT, 204)
         val result = controller.rejectInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 204
       }
 
       "return 204 for accepting already rejected invitation" in {
         givenVATUserAuthenticatedInStubs()
-        givenGetVATInvitationStub(arn, "Rejected")
+        givenVatInvitationExists("Rejected")
         val result = controller.rejectInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 204
       }
 
       "return 409 for accepting already accepted invitation" in {
         givenVATUserAuthenticatedInStubs()
-        givenGetVATInvitationStub(arn, "Accepted")
+        givenVatInvitationExists("Accepted")
         val result = controller.rejectInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 409
       }
 
       "return 409 for accepting already expired invitation" in {
         givenVATUserAuthenticatedInStubs()
-        givenGetVATInvitationStub(arn, "Expired")
+        givenVatInvitationExists("Expired")
         val result = controller.rejectInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 409
       }
 
       "return 404 for unable to find invitation to reject" in {
         givenVATUserAuthenticatedInStubs()
-        givenInvitationNotFound(arn, invitationIdVAT)
-        givenRejectInvitationStub(invitationIdVAT, validVrn.value, "VRN", 404)
+        givenInvitationNotFound(invitationIdVAT)
+        givenRejectInvitation(invitationIdVAT, 404)
         val result = controller.rejectInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 404
       }
 
       "return 403 for unauthorised to reject invitation" in {
         givenVATUserAuthenticatedInStubs()
-        givenGetVATInvitationStub(arn, "Pending")
-        givenRejectInvitationStub(invitationIdVAT, validVrn.value, "VRN", 403)
+        givenVatInvitationExists("Pending")
+        givenRejectInvitation(invitationIdVAT, 403)
         val result = controller.rejectInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 403
       }
@@ -372,7 +373,7 @@ class InvitationsControllerISpec extends BaseISpec with ACAStubs with AgentsExte
 
       "throw an exception detailing that there was an unsupported service type" in {
         givenUnsupportedRegimeUserInStubs()
-        givenGetUnsupportedInvitationStub(arn, "Pending")
+        givenUnsupportedInvitationExists
         val result = controller.rejectInvitation(invalidInvitationId)(fakeRequest)
         intercept[Exception](status(result)).getMessage shouldBe "Unsupported service type"
       }

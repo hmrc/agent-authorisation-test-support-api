@@ -27,7 +27,7 @@ class MicroserviceModule(val environment: Environment, val configuration: Config
   override def configure(): Unit = {
 
     bindBaseUrl("agents-external-stubs")
-    bindBaseUrl("agent-client-authorisation")
+    bindBaseUrl("agent-client-relationships")
 
     bindSeqStringProperty("api.supported-versions")
     ()

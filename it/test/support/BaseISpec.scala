@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentauthorisation.support
+package support
 
 import org.apache.pekko.stream.Materializer
 import org.scalatest.OptionValues
@@ -24,7 +24,7 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.agentauthorisation.stubs.DataStreamStubs
+import stubs.DataStreamStubs
 
 abstract class BaseISpec
     extends AnyWordSpecLike
@@ -45,8 +45,8 @@ abstract class BaseISpec
         "auditing.consumer.baseUri.port"                        -> wireMockPort,
         "microservice.services.agents-external-stubs.host"      -> wireMockHost,
         "microservice.services.agents-external-stubs.port"      -> wireMockPort,
-        "microservice.services.agent-client-authorisation.host" -> wireMockHost,
-        "microservice.services.agent-client-authorisation.port" -> wireMockPort,
+        "microservice.services.agent-client-relationships.host" -> wireMockHost,
+        "microservice.services.agent-client-relationships.port" -> wireMockPort,
         "api.supported-versions"                                -> Seq("1.0")
       )
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentauthorisation.stubs
+package stubs
 
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -46,4 +46,5 @@ trait TestIdentifiers {
   val validVrn9755 = Vrn("101747641")
 
   val invalidInvitationId = "ZTSF4OW9CCRPT"
+  val unsupportedService = "HMRC-ABC-DEF"
 }

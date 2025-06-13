@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentauthorisation.stubs
+package stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Seconds, Span}
-import uk.gov.hmrc.agentauthorisation.support.WireMockSupport
+import support.WireMockSupport
 
 trait DataStreamStubs extends Eventually {
   me: WireMockSupport =>

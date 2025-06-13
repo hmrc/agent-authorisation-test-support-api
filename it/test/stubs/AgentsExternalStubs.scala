@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentauthorisation.stubs
+package stubs
+
 import com.github.tomakehurst.wiremock.client.WireMock._
 
 trait AgentsExternalStubs {
