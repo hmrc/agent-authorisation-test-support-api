@@ -1,6 +1,6 @@
 
-GET        /api/conf/:version/*file                              @uk.gov.hmrc.agentauthorisation.controllers.YamlController.yaml(version, file)
+GET        /api/conf/:version/*file                              @uk.gov.hmrc.agentauthorisation.controllers.api.YamlController.yaml(version, file)
 
-GET        /api/definition                                       @uk.gov.hmrc.agentauthorisation.controllers.DocumentationController.definition()
+GET        /api/definition                                       @uk.gov.hmrc.agentauthorisation.controllers.api.DocumentationController.definition()
 
-GET        /api/documentation/:version/:endpointName             @uk.gov.hmrc.agentauthorisation.controllers.DocumentationController.documentation(version,endpointName)
+GET        /api/documentation/:version/:endpointName             @uk.gov.hmrc.agentauthorisation.controllers.api.DocumentationController.documentation(version,endpointName)

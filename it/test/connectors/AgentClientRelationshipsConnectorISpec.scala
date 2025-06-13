@@ -20,7 +20,6 @@ import stubs.{ACRStubs, TestIdentifiers}
 import support.BaseISpec
 import uk.gov.hmrc.agentauthorisation.connectors.AgentClientRelationshipsConnector
 import uk.gov.hmrc.agentauthorisation.models.Invitation
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global

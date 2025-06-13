@@ -26,7 +26,7 @@ import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import support.BaseISpec
-import uk.gov.hmrc.agentauthorisation.controllers.{DocumentationController, YamlController}
+import uk.gov.hmrc.agentauthorisation.controllers.api.{DocumentationController, YamlController}
 
 import scala.concurrent.Future
 

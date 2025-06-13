@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentauthorisation.controllers
+package uk.gov.hmrc.agentauthorisation.controllers.api
 
-import org.apache.pekko.stream.Materializer
 import controllers.Assets
+import org.apache.pekko.stream.Materializer
 import play.api.Configuration
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import play.filters.cors.CORSActionBuilder

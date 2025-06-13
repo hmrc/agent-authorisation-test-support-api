@@ -1,4 +1,4 @@
-@import uk.gov.hmrc.agentauthorisation.controllers.ApiAccess
+@import uk.gov.hmrc.agentauthorisation.controllers.api.ApiAccess
 @import play.api.libs.json.Json
 
 @(access: ApiAccess)

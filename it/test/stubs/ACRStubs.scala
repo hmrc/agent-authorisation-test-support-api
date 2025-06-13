@@ -25,44 +25,52 @@ trait ACRStubs {
 
   me: WireMockSupport with TestIdentifiers =>
 
-  def invitationJson(invitationId: String,
-                     status: String,
-                     service: String,
-                     clientId: String,
-                     clientIdType: String,
-                     clientType: String): JsValue =
+  def invitationJson(
+    invitationId: String,
+    status: String,
+    service: String,
+    clientId: String,
+    clientIdType: String,
+    clientType: String
+  ): JsValue =
     Json.obj(
       "invitationId" -> invitationId,
-      "arn" -> arn.value,
-      "clientType" -> clientType,
-      "clientId" -> clientId,
+      "arn"          -> arn.value,
+      "clientType"   -> clientType,
+      "clientId"     -> clientId,
       "clientIdType" -> clientIdType,
-      "service" -> service,
-      "status" -> status
+      "service"      -> service,
+      "status"       -> status
     )
 
   def givenItsaInvitationExists(status: String): StubMapping = givenInvitationExists(
-    invitationIdITSA, invitationJson(invitationIdITSA, status, serviceITSA, mtdItId.value, identifierITSA, "personal")
+    invitationIdITSA,
+    invitationJson(invitationIdITSA, status, serviceITSA, mtdItId.value, identifierITSA, "personal")
   )
 
   def givenItsaSuppInvitationExists(status: String): StubMapping = givenInvitationExists(
-    invitationIdITSA, invitationJson(invitationIdITSA, status, serviceITSASupp, mtdItId.value, identifierITSA, "personal")
+    invitationIdITSA,
+    invitationJson(invitationIdITSA, status, serviceITSASupp, mtdItId.value, identifierITSA, "personal")
   )
 
   def givenAltItsaInvitationExists(status: String): StubMapping = givenInvitationExists(
-    invitationIdITSA, invitationJson(invitationIdITSA, status, serviceITSA, nino, identifierAltITSA, "personal")
+    invitationIdITSA,
+    invitationJson(invitationIdITSA, status, serviceITSA, nino, identifierAltITSA, "personal")
   )
 
   def givenAltItsaSuppInvitationExists(status: String): StubMapping = givenInvitationExists(
-    invitationIdITSA, invitationJson(invitationIdITSA, status, serviceITSASupp, nino, identifierAltITSA, "personal")
+    invitationIdITSA,
+    invitationJson(invitationIdITSA, status, serviceITSASupp, nino, identifierAltITSA, "personal")
   )
 
   def givenVatInvitationExists(status: String): StubMapping = givenInvitationExists(
-    invitationIdVAT, invitationJson(invitationIdVAT, status, serviceVAT, validVrn.value, identifierVAT, "business")
+    invitationIdVAT,
+    invitationJson(invitationIdVAT, status, serviceVAT, validVrn.value, identifierVAT, "business")
   )
 
   def givenUnsupportedInvitationExists: StubMapping = givenInvitationExists(
-    invalidInvitationId, invitationJson(invalidInvitationId, "Pending", unsupportedService, "ABC", "ABC", "business")
+    invalidInvitationId,
+    invitationJson(invalidInvitationId, "Pending", unsupportedService, "ABC", "ABC", "business")
   )
 
   private def givenInvitationExists(invitationId: String, invitationJson: JsValue): StubMapping =
@@ -75,7 +83,7 @@ trait ACRStubs {
         )
     )
 
-  def givenInvitationNotFound(invitationId: String): Unit = {
+  def givenInvitationNotFound(invitationId: String): Unit =
     stubFor(
       get(urlEqualTo(s"/test-only/invitation/$invitationId"))
         .willReturn(
@@ -83,7 +91,6 @@ trait ACRStubs {
             .withStatus(404)
         )
     )
-  }
 
   def givenAcceptInvitation(invitationId: String, status: Int): StubMapping =
     stubFor(
