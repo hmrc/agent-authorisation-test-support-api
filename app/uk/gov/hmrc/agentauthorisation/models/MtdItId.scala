@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,21 @@
  */
 
 package uk.gov.hmrc.agentauthorisation.models
-import play.api.libs.json.{Format, Json}
 
-case class KnownFact(key: String, value: String) {
-  override def toString: String = s"${key.toUpperCase}~$value"
-}
+import uk.gov.hmrc.domain.{SimpleObjectReads, SimpleObjectWrites, TaxIdentifier}
 
-object KnownFact {
-  implicit val formats: Format[KnownFact] = Json.format[KnownFact]
-  implicit val ordering: Ordering[KnownFact] = Ordering.by(_.key)
+case class MtdItId(value: String) extends TaxIdentifier
+
+object MtdItId {
+
+  private val pattern = "^[0-9A-Za-z]{1,15}$".r
+
+  def isValid(mtdItId: String): Boolean =
+    mtdItId match {
+      case pattern(_*) => true
+      case _           => false
+    }
+
+  implicit val reads: SimpleObjectReads[MtdItId] = new SimpleObjectReads[MtdItId]("value", MtdItId.apply)
+  implicit val writes: SimpleObjectWrites[MtdItId] = new SimpleObjectWrites[MtdItId](_.value)
 }

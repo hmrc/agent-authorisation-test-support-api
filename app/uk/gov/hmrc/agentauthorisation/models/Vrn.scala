@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,17 @@
 
 package uk.gov.hmrc.agentauthorisation.models
 
-import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.agentauthorisation.models.Arn
+import uk.gov.hmrc.domain.{SimpleObjectReads, SimpleObjectWrites, TaxIdentifier}
 
-case class Invitation(
-  invitationId: String,
-  arn: Arn,
-  clientType: String,
-  clientId: String,
-  clientIdType: String,
-  service: String,
-  status: String
-)
+case class Vrn(value: String) extends TaxIdentifier {
+  require(Vrn.isValid(value), s"$value is not a valid VRN.")
+}
 
-object Invitation {
-  implicit val formats: OFormat[Invitation] = Json.format[Invitation]
+object Vrn {
+  implicit val vrnReads: SimpleObjectReads[Vrn] = new SimpleObjectReads[Vrn]("value", Vrn.apply)
+  implicit val vrnWrites: SimpleObjectWrites[Vrn] = new SimpleObjectWrites[Vrn](_.value)
+
+  private[models] def regexCheck(vrn: String): Boolean = vrn.matches("[0-9]{9}")
+
+  def isValid(vrn: String): Boolean = regexCheck(vrn)
 }

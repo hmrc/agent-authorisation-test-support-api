@@ -16,8 +16,8 @@
 
 package stubs
 
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Vrn}
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.agentauthorisation.models.{Arn, MtdItId}
+import uk.gov.hmrc.domain.{Nino, Vrn}
 
 trait TestIdentifiers {
 

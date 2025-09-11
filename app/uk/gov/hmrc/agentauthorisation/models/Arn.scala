@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentauthorisation
+package uk.gov.hmrc.agentauthorisation.models
 
-import scala.concurrent.Future
+import uk.gov.hmrc.domain.{SimpleObjectReads, SimpleObjectWrites, TaxIdentifier}
 
-package object util {
+case class Arn(value: String) extends TaxIdentifier
 
-  implicit def toFuture[A](a: A): Future[A] = Future.successful(a)
-
+object Arn {
+  implicit val arnReads: SimpleObjectReads[Arn] = new SimpleObjectReads[Arn]("value", Arn.apply)
+  implicit val arnWrites: SimpleObjectWrites[Arn] = new SimpleObjectWrites[Arn](_.value)
 }

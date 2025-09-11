@@ -23,7 +23,7 @@ import play.api.test.Helpers._
 import play.mvc.Http.HeaderNames
 import support.BaseISpec
 import uk.gov.hmrc.agentauthorisation.controllers.KnownFactController
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.agentauthorisation.models.Vrn
 import uk.gov.hmrc.domain.Nino
 
 class KnownFactControllerISpec extends BaseISpec {

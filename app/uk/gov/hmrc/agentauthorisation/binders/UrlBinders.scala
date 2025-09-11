@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentauthorisation.binders
 
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.agentauthorisation.models.Vrn
 import uk.gov.hmrc.domain.Nino
 
 object UrlBinders {

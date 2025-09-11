@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,25 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentauthorisation
+package uk.gov.hmrc.agentauthorisation.models
 
-import java.nio.charset.StandardCharsets.UTF_8
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
+import play.api.libs.json.{JsString, Json}
 
-import play.utils.UriEncoding
+class ArnSpec extends AnyWordSpecLike with Matchers {
 
-object UriPathEncoding {
+  "Arn" should {
 
-  def encodePathSegment(pathSegment: String): String =
-    UriEncoding.encodePathSegment(pathSegment, UTF_8.name)
+    val model = Arn("ABCDEFG12345678")
+    val json = JsString("ABCDEFG12345678")
 
+    "read from JSON" in {
+      json.as[Arn] shouldBe model
+    }
+
+    "write to JSON" in {
+      Json.toJson(model) shouldBe json
+    }
+  }
 }

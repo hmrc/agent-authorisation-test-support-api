@@ -15,9 +15,10 @@
  */
 
 package uk.gov.hmrc.agentauthorisation.models
+
 import play.api.libs.json.Json.reads
 import play.api.libs.json.Reads
-import uk.gov.hmrc.agentmtdidentifiers.model.MtdItId
+import uk.gov.hmrc.agentauthorisation.models.MtdItId
 
 case class BusinessDetails(businessData: Array[BusinessData], mtdbsa: Option[MtdItId])
 

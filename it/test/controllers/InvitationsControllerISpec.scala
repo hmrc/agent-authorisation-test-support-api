@@ -72,9 +72,17 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
         status(result) shouldBe 409
       }
 
-      "return 404 for unable to find invitation to accept" in {
+      "return 404 for unable to find invitation in request to fetch invitation" in {
         givenITSAUserAuthenticatedInStubs()
         givenInvitationNotFound(invitationIdITSA)
+        val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
+        status(result) shouldBe 404
+      }
+
+      "return 404 for unable to find invitation in request to accept invitation" in {
+        givenITSAUserAuthenticatedInStubs()
+        givenItsaInvitationExists("Pending")
+        givenUserIdForNino(nino)
         givenAcceptInvitation(invitationIdITSA, 404)
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 404
@@ -86,6 +94,22 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
         givenAcceptInvitation(invitationIdITSA, 403)
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 403
+      }
+
+      "return 403 for an unexpected invitation status" in {
+        givenITSAUserAuthenticatedInStubs()
+        givenItsaInvitationExists("Confused")
+        val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
+        status(result) shouldBe 403
+      }
+
+      "return 500 when an unexpected status is received in request to accept invitation" in {
+        givenITSAUserAuthenticatedInStubs()
+        givenItsaInvitationExists("Pending")
+        givenUserIdForNino(nino)
+        givenAcceptInvitation(invitationIdITSA, 499)
+        val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
+        status(result) shouldBe 500
       }
     }
 
@@ -129,9 +153,17 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
         status(result) shouldBe 409
       }
 
-      "return 404 for unable to find invitation to accept" in {
+      "return 404 for unable to find invitation in request to fetch invitation" in {
         givenITSASuppUserAuthenticatedInStubs()
         givenInvitationNotFound(invitationIdITSA)
+        val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
+        status(result) shouldBe 404
+      }
+
+      "return 404 for unable to find invitation in request to accept invitation" in {
+        givenITSASuppUserAuthenticatedInStubs()
+        givenItsaSuppInvitationExists("Pending")
+        givenUserIdForNino(nino)
         givenAcceptInvitation(invitationIdITSA, 404)
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 404
@@ -143,6 +175,22 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
         givenAcceptInvitation(invitationIdITSA, 403)
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 403
+      }
+
+      "return 403 for an unexpected invitation status" in {
+        givenITSASuppUserAuthenticatedInStubs()
+        givenItsaSuppInvitationExists("Confused")
+        val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
+        status(result) shouldBe 403
+      }
+
+      "return 500 when an unexpected status is received in request to accept invitation" in {
+        givenITSASuppUserAuthenticatedInStubs()
+        givenItsaSuppInvitationExists("Pending")
+        givenUserIdForNino(nino)
+        givenAcceptInvitation(invitationIdITSA, 499)
+        val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
+        status(result) shouldBe 500
       }
     }
 
@@ -177,9 +225,16 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
         status(result) shouldBe 409
       }
 
-      "return 404 for unable to find invitation to accept" in {
+      "return 404 for unable to find invitation in request to fetch invitation" in {
         givenVATUserAuthenticatedInStubs()
         givenInvitationNotFound(invitationIdVAT)
+        val result = controller.acceptInvitation(invitationIdVAT)(fakeRequest)
+        status(result) shouldBe 404
+      }
+
+      "return 404 for unable to find invitation in request to accept invitation" in {
+        givenVATUserAuthenticatedInStubs()
+        givenVatInvitationExists("Pending")
         givenAcceptInvitation(invitationIdVAT, 404)
         val result = controller.acceptInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 404
@@ -191,6 +246,21 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
         givenAcceptInvitation(invitationIdVAT, 403)
         val result = controller.acceptInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 403
+      }
+
+      "return 403 for an unexpected invitation status" in {
+        givenVATUserAuthenticatedInStubs()
+        givenVatInvitationExists("Confused")
+        val result = controller.acceptInvitation(invitationIdVAT)(fakeRequest)
+        status(result) shouldBe 403
+      }
+
+      "return 500 when an unexpected status is received in request to accept invitation" in {
+        givenVATUserAuthenticatedInStubs()
+        givenVatInvitationExists("Pending")
+        givenAcceptInvitation(invitationIdVAT, 499)
+        val result = controller.acceptInvitation(invitationIdVAT)(fakeRequest)
+        status(result) shouldBe 500
       }
     }
 
@@ -247,9 +317,17 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
         status(result) shouldBe 409
       }
 
-      "return 404 for unable to find invitation to reject" in {
+      "return 404 for unable to find invitation in request to fetch invitation" in {
         givenITSAUserAuthenticatedInStubs()
         givenInvitationNotFound(invitationIdITSA)
+        val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
+        status(result) shouldBe 404
+      }
+
+      "return 404 for unable to find invitation in request to reject invitation" in {
+        givenITSAUserAuthenticatedInStubs()
+        givenItsaInvitationExists("Pending")
+        givenUserIdForNino(nino)
         givenRejectInvitation(invitationIdITSA, 404)
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 404
@@ -261,6 +339,22 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
         givenRejectInvitation(invitationIdITSA, 403)
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 403
+      }
+
+      "return 403 for an unexpected invitation status" in {
+        givenITSAUserAuthenticatedInStubs()
+        givenItsaInvitationExists("Confused")
+        val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
+        status(result) shouldBe 403
+      }
+
+      "return 500 when an unexpected status is received in request to reject invitation" in {
+        givenITSAUserAuthenticatedInStubs()
+        givenItsaInvitationExists("Pending")
+        givenUserIdForNino(nino)
+        givenRejectInvitation(invitationIdITSA, 499)
+        val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
+        status(result) shouldBe 500
       }
     }
 
@@ -304,9 +398,17 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
         status(result) shouldBe 409
       }
 
-      "return 404 for unable to find invitation to reject" in {
+      "return 404 for unable to find invitation in request to fetch invitation" in {
         givenITSASuppUserAuthenticatedInStubs()
         givenInvitationNotFound(invitationIdITSA)
+        val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
+        status(result) shouldBe 404
+      }
+
+      "return 404 for unable to find invitation in request to reject invitation" in {
+        givenITSASuppUserAuthenticatedInStubs()
+        givenItsaSuppInvitationExists("Pending")
+        givenUserIdForNino(nino)
         givenRejectInvitation(invitationIdITSA, 404)
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 404
@@ -318,6 +420,22 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
         givenRejectInvitation(invitationIdITSA, 403)
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 403
+      }
+
+      "return 403 for an unexpected invitation status" in {
+        givenITSASuppUserAuthenticatedInStubs()
+        givenItsaSuppInvitationExists("Confused")
+        val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
+        status(result) shouldBe 403
+      }
+
+      "return 500 when an unexpected status is received in request to reject invitation" in {
+        givenITSASuppUserAuthenticatedInStubs()
+        givenItsaSuppInvitationExists("Pending")
+        givenUserIdForNino(nino)
+        givenRejectInvitation(invitationIdITSA, 499)
+        val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
+        status(result) shouldBe 500
       }
     }
 
@@ -352,9 +470,16 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
         status(result) shouldBe 409
       }
 
-      "return 404 for unable to find invitation to reject" in {
+      "return 404 for unable to find invitation in request to fetch invitation" in {
         givenVATUserAuthenticatedInStubs()
         givenInvitationNotFound(invitationIdVAT)
+        val result = controller.rejectInvitation(invitationIdVAT)(fakeRequest)
+        status(result) shouldBe 404
+      }
+
+      "return 404 for unable to find invitation in request to reject invitation" in {
+        givenVATUserAuthenticatedInStubs()
+        givenVatInvitationExists("Pending")
         givenRejectInvitation(invitationIdVAT, 404)
         val result = controller.rejectInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 404
@@ -366,6 +491,21 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
         givenRejectInvitation(invitationIdVAT, 403)
         val result = controller.rejectInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 403
+      }
+
+      "return 403 for an unexpected invitation status" in {
+        givenVATUserAuthenticatedInStubs()
+        givenVatInvitationExists("Confused")
+        val result = controller.rejectInvitation(invitationIdVAT)(fakeRequest)
+        status(result) shouldBe 403
+      }
+
+      "return 500 when an unexpected status is received in request to reject invitation" in {
+        givenVATUserAuthenticatedInStubs()
+        givenVatInvitationExists("Pending")
+        givenRejectInvitation(invitationIdVAT, 499)
+        val result = controller.rejectInvitation(invitationIdVAT)(fakeRequest)
+        status(result) shouldBe 500
       }
     }
 

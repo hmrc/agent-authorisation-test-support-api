@@ -19,9 +19,8 @@ package uk.gov.hmrc.agentauthorisation.connectors
 import play.api.http.HeaderNames
 import play.api.libs.json.Json
 import play.utils.UriEncoding
-import uk.gov.hmrc.agentauthorisation.models.{BusinessDetails, User, VatCustomerInfo}
+import uk.gov.hmrc.agentauthorisation.models.{BusinessDetails, User, VatCustomerInfo, Vrn}
 import uk.gov.hmrc.agentauthorisation.util.HttpAPIMonitor
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderNames.authorisation
 import uk.gov.hmrc.http.HttpReads.Implicits._

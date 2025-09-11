@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentauthorisation.controllers
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.agentauthorisation.connectors.{AgentClientRelationshipsConnector, AgentsExternalStubsConnector}
 import uk.gov.hmrc.agentauthorisation.models.Invitation
-import uk.gov.hmrc.agentmtdidentifiers.model.{NinoType, Service}
+import uk.gov.hmrc.agentauthorisation.models.{NinoType, Service}
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, SessionId}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 

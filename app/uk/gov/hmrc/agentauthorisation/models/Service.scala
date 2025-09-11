@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,17 @@
 
 package uk.gov.hmrc.agentauthorisation.models
 
-import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.agentauthorisation.models.Arn
+import uk.gov.hmrc.domain.TaxIdentifier
 
-case class Invitation(
-  invitationId: String,
-  arn: Arn,
-  clientType: String,
-  clientId: String,
-  clientIdType: String,
-  service: String,
-  status: String
+sealed abstract class Service(
+  val id: String,
+  val invitationIdPrefix: Char,
+  val enrolmentKey: String,
+  val supportedSuppliedClientIdType: ClientIdType[_ <: TaxIdentifier],
+  val supportedClientIdType: ClientIdType[_ <: TaxIdentifier]
 )
 
-object Invitation {
-  implicit val formats: OFormat[Invitation] = Json.format[Invitation]
+object Service {
+  case object MtdIt extends Service("HMRC-MTD-IT", 'A', "HMRC-MTD-IT", NinoType, MtdItIdType)
+  case object MtdItSupp extends Service("HMRC-MTD-IT-SUPP", 'L', "HMRC-MTD-IT-SUPP", NinoType, MtdItIdType)
 }

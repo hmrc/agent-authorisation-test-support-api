@@ -20,8 +20,7 @@ import com.google.inject.Provider
 import play.api.libs.json.{Format, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.agentauthorisation.connectors.AgentsExternalStubsConnector
-import uk.gov.hmrc.agentauthorisation.models.{EnrolmentKey, Identifier, User}
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.agentauthorisation.models.{EnrolmentKey, Identifier, User, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, SessionId}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
