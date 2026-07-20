@@ -34,13 +34,13 @@ trait ACRStubs {
     clientType: String
   ): JsValue =
     Json.obj(
-      "invitationId"     -> invitationId,
-      "arn"              -> arn.value,
-      "clientType"       -> clientType,
-      "suppliedClientId" -> suppliedClientId,
-      "suppliedClientIdType"     -> suppliedClientIdType,
-      "service"          -> service,
-      "status"           -> status
+      "invitationId"         -> invitationId,
+      "arn"                  -> arn.value,
+      "clientType"           -> clientType,
+      "suppliedClientId"     -> suppliedClientId,
+      "suppliedClientIdType" -> suppliedClientIdType,
+      "service"              -> service,
+      "status"               -> status
     )
 
   def givenItsaInvitationExists(status: String): StubMapping = givenInvitationExists(
