@@ -41,7 +41,7 @@ class AgentClientRelationshipsConnectorISpec extends BaseISpec with ACRStubs wit
   )
 
   val itsaSuppInvitation: Invitation = itsaInvitation.copy(service = serviceITSASupp)
-  val altItsaInvitation: Invitation = itsaInvitation.copy(clientIdType = identifierAltITSA, clientId = nino)
+  val altItsaInvitation: Invitation = itsaInvitation.copy(suppliedClientIdType = identifierAltITSA, suppliedClientId = nino)
 
   val vatInvitation: Invitation = Invitation(
     invitationIdVAT,

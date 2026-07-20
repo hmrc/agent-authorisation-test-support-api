@@ -23,8 +23,8 @@ case class Invitation(
   invitationId: String,
   arn: Arn,
   clientType: String,
-  clientId: String,
-  clientIdType: String,
+  suppliedClientId: String,
+  suppliedClientIdType: String,
   service: String,
   status: String
 )
