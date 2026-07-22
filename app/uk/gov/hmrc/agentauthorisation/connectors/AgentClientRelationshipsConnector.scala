@@ -35,41 +35,32 @@ class AgentClientRelationshipsConnector @Inject() (
 )(implicit val ec: ExecutionContext)
     extends HttpAPIMonitor {
 
-  def getInvitation(
-    invitationId: String
-  )(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Option[Invitation]] =
+  def getInvitation(invitationId: String)(implicit sessionHeaders: HeaderCarrier): Future[Option[Invitation]] =
     monitor(s"ConsumedAPI-Get-Invitation-GET") {
-      val requestUrl = s"$baseUrl/test-only/invitation/$invitationId"
       http
-        .get(url"$requestUrl")
+        .get(url"$baseUrl/test-only/invitation/$invitationId")
         .execute[Option[Invitation]]
     }
 
-  def acceptInvitation(invitationId: String)(implicit
-    headerCarrier: HeaderCarrier,
-    ec: ExecutionContext
-  ): Future[Option[Int]] =
+  def acceptInvitation(invitationId: String)(implicit sessionHeaders: HeaderCarrier): Future[Int] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       val requestUrl = s"$baseUrl/agent-client-relationships/authorisation-response/accept/$invitationId"
       http
         .put(url"$requestUrl")
         .execute[HttpResponse]
-        .map(response => Some(response.status))
+        .map(_.status)
     }.recover { case ex: UpstreamErrorResponse =>
-      Some(ex.statusCode)
+      ex.statusCode
     }
 
-  def rejectInvitation(invitationId: String)(implicit
-    headerCarrier: HeaderCarrier,
-    ec: ExecutionContext
-  ): Future[Option[Int]] =
+  def rejectInvitation(invitationId: String)(implicit sessionHeaders: HeaderCarrier): Future[Int] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       val requestUrl = s"$baseUrl/agent-client-relationships/client/authorisation-response/reject/$invitationId"
       http
         .put(url"$requestUrl")
         .execute[HttpResponse]
-        .map(response => Some(response.status))
+        .map(_.status)
     }.recover { case ex: UpstreamErrorResponse =>
-      Some(ex.statusCode)
+      ex.statusCode
     }
 }

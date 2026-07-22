@@ -22,7 +22,7 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.agentauthorisation.connectors.AgentsExternalStubsConnector
 import uk.gov.hmrc.agentauthorisation.models.{EnrolmentKey, Identifier, User, Vrn}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{Authorization, HeaderCarrier, SessionId}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import java.time.format.DateTimeFormatter
@@ -51,13 +51,9 @@ class KnownFactController @Inject() (
         assignedPrincipalEnrolments = Seq(EnrolmentKey("HMRC-MTD-VAT", Seq(Identifier("VRN", vrn.value))))
       )
     for {
-      (authorizationToken, sessionId, _) <- stubsConnector
-                                              .signIn("Alf")(HeaderCarrier(), ec)
-      hc =
-        HeaderCarrier(authorization = Some(Authorization(authorizationToken)), sessionId = Some(SessionId(sessionId)))
-      _ <- stubsConnector.createUser(user, Individual)(hc, ec)
-      vatCustomerInformation <- stubsConnector
-                                  .getVatCustomerInformation(vrn)(hc, ec)
+      sessionHeaders         <- stubsConnector.signInAndGetSessionHeaders("Alf")(HeaderCarrier())
+      _                      <- stubsConnector.createUser(user, Individual)(sessionHeaders)
+      vatCustomerInformation <- stubsConnector.getVatCustomerInformation(vrn)(sessionHeaders)
     } yield vatCustomerInformation.flatMap(_.effectiveRegistrationDate) match {
       case Some(date) =>
         Ok(Json.toJson(KnownFactResponse(Seq("MTD-VAT"), "personal", "vrn", vrn.value, date.format(dateFormat))))
@@ -75,12 +71,9 @@ class KnownFactController @Inject() (
         assignedPrincipalEnrolments = Seq(EnrolmentKey("HMRC-MTD-IT", Seq.empty))
       )
     for {
-      (authorizationToken, sessionId, _) <- stubsConnector
-                                              .signIn("Alf")(HeaderCarrier(), ec)
-      hc =
-        HeaderCarrier(authorization = Some(Authorization(authorizationToken)), sessionId = Some(SessionId(sessionId)))
-      _               <- stubsConnector.createUser(user, Individual)(hc, ec)
-      businessDetails <- stubsConnector.getBusinessDetails(nino)(hc, ec)
+      sessionHeaders  <- stubsConnector.signInAndGetSessionHeaders("Alf")(HeaderCarrier())
+      _               <- stubsConnector.createUser(user, Individual)(sessionHeaders)
+      businessDetails <- stubsConnector.getBusinessDetails(nino)(sessionHeaders)
     } yield businessDetails.flatMap(
       _.businessData.headOption
         .flatMap(_.businessAddressDetails.postalCode)

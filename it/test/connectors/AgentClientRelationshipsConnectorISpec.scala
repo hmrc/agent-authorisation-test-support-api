@@ -22,8 +22,6 @@ import uk.gov.hmrc.agentauthorisation.connectors.AgentClientRelationshipsConnect
 import uk.gov.hmrc.agentauthorisation.models.Invitation
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 class AgentClientRelationshipsConnectorISpec extends BaseISpec with ACRStubs with TestIdentifiers {
 
   val connector: AgentClientRelationshipsConnector = app.injector.instanceOf[AgentClientRelationshipsConnector]
@@ -104,7 +102,7 @@ class AgentClientRelationshipsConnectorISpec extends BaseISpec with ACRStubs wit
       givenAcceptInvitation(invitationIdITSA, 204)
       val result = connector.acceptInvitation(invitationIdITSA).futureValue
 
-      result shouldBe Some(204)
+      result shouldBe 204
     }
 
     "return 404 when invitation is not found" in {
@@ -112,7 +110,7 @@ class AgentClientRelationshipsConnectorISpec extends BaseISpec with ACRStubs wit
       givenAcceptInvitation(invitationIdITSA, 404)
       val result = connector.acceptInvitation(invitationIdITSA).futureValue
 
-      result shouldBe Some(404)
+      result shouldBe 404
     }
 
     "return the status code of the HTTP exception when an UpstreamErrorResponse is returned" in {
@@ -120,7 +118,7 @@ class AgentClientRelationshipsConnectorISpec extends BaseISpec with ACRStubs wit
       givenAcceptInvitation(invitationIdITSA, 500)
       val result = connector.acceptInvitation(invitationIdITSA).futureValue
 
-      result shouldBe Some(500)
+      result shouldBe 500
     }
   }
 
@@ -131,7 +129,7 @@ class AgentClientRelationshipsConnectorISpec extends BaseISpec with ACRStubs wit
       givenRejectInvitation(invitationIdITSA, 204)
       val result = connector.rejectInvitation(invitationIdITSA).futureValue
 
-      result shouldBe Some(204)
+      result shouldBe 204
     }
 
     "return 404 when invitation is not found" in {
@@ -139,7 +137,7 @@ class AgentClientRelationshipsConnectorISpec extends BaseISpec with ACRStubs wit
       givenRejectInvitation(invitationIdITSA, 404)
       val result = connector.rejectInvitation(invitationIdITSA).futureValue
 
-      result shouldBe Some(404)
+      result shouldBe 404
     }
 
     "return the status code of the HTTP exception when an UpstreamErrorResponse is returned" in {
@@ -147,7 +145,7 @@ class AgentClientRelationshipsConnectorISpec extends BaseISpec with ACRStubs wit
       givenRejectInvitation(invitationIdITSA, 500)
       val result = connector.rejectInvitation(invitationIdITSA).futureValue
 
-      result shouldBe Some(500)
+      result shouldBe 500
     }
   }
 

@@ -19,13 +19,15 @@ package uk.gov.hmrc.agentauthorisation.connectors
 import play.api.http.HeaderNames
 import play.api.libs.json.Json
 import play.utils.UriEncoding
+import sttp.model.Uri
+import sttp.model.Uri.UriContext
 import uk.gov.hmrc.agentauthorisation.models.{BusinessDetails, User, VatCustomerInfo, Vrn}
 import uk.gov.hmrc.agentauthorisation.util.HttpAPIMonitor
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpReads, HttpResponse, SessionId}
 import uk.gov.hmrc.http.HeaderNames.authorisation
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
 import java.net.URL
@@ -41,81 +43,69 @@ class AgentsExternalStubsConnector @Inject() (
 )(implicit val ec: ExecutionContext)
     extends HttpAPIMonitor {
 
-  def signIn(userId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[(String, String, String)] =
-    http
-      .post(
-        new URL(s"$baseUrl/agents-external-stubs/sign-in")
-      )
-      .withBody(
-        Json.obj("planetId" -> "hmrc", "userId" -> userId)
-      )
-      .execute[HttpResponse]
-      .map(response =>
-        (
-          response
-            .header(HeaderNames.AUTHORIZATION)
-            .getOrElse(throw new Exception("Missing Authorization token")),
-          response.header("X-Session-ID").getOrElse(throw new Exception("Missing X-Session-ID token")),
-          response.header(HeaderNames.LOCATION).getOrElse(throw new Exception("User location URI not found"))
-        )
-      )
+  private val AgentsExternalStubsUri = uri"$baseUrl/agents-external-stubs/"
 
-  def createUser(user: User, affinityGroup: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
+  def signInAndGetSessionHeaders(userId: String)(implicit sessionHeaders: HeaderCarrier): Future[HeaderCarrier] =
     http
-      .post(
-        new URL(s"$baseUrl/agents-external-stubs/users?affinityGroup=$affinityGroup")
-      )
-      .withBody(Json.toJson(user))
-      .execute[HttpResponse]
-      .map(_ => ())
-      .recover {
-        case e: UpstreamErrorResponse if e.statusCode == 409 => ()
-      }
-
-  def getUserIdForEnrolment(enrolmentKey: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
-    http
-      .get(new URL(s"$baseUrl/agents-external-stubs/known-facts/${UriEncoding
-          .encodePathSegment(enrolmentKey, StandardCharsets.UTF_8.name)}"))
+      .post(uri"$AgentsExternalStubsUri/sign-in".toJavaUri.toURL)
+      .withBody(Json.obj("planetId" -> "hmrc", "userId" -> userId))
       .execute[HttpResponse]
       .map { response =>
-        (response.json \ "user" \ "userId").as[String]
+        val authorizationHeader = response.header(HeaderNames.AUTHORIZATION).map(Authorization(_))
+        val sessionIdHeader = response.header("X-Session-ID").map(SessionId(_))
+        HeaderCarrier(authorization = authorizationHeader, sessionId = sessionIdHeader)
       }
 
-  def getUserIdForNino(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
+  def createUser(user: User, affinityGroup: String)(implicit sessionHeaders: HeaderCarrier): Future[Unit] = {
+    val uri = uri"$AgentsExternalStubsUri/users?affinityGroup=$affinityGroup"
     http
-      .get(new URL(s"$baseUrl/agents-external-stubs/users/nino/${UriEncoding
-          .encodePathSegment(nino, StandardCharsets.UTF_8.name)}"))
+      .post(uri.toJavaUri.toURL)
+      .withBody(Json.toJson(user))
+      .execute[Unit]
+  }
+
+  def getUserIdForNino(nino: String)(implicit sessionHeaders: HeaderCarrier): Future[String] = {
+    val encodedNino = encodePathSegment(nino)
+    val uri = uri"$AgentsExternalStubsUri/users/nino/$encodedNino"
+
+    http
+      .get(uri.toJavaUri.toURL)
       .execute[HttpResponse]
       .map { response =>
         (response.json \ "userId").as[String]
       }
-
-  def getBusinessDetails(
-    nino: Nino
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[BusinessDetails]] =
-    getWithDesHeaders[BusinessDetails](
-      "getRegistrationBusinessDetailsByNino",
-      new URL(baseUrl, s"/registration/business-details/nino/${encodePathSegment(nino.value)}").toString
-    )
-
-  def getVatCustomerInformation(
-    vrn: Vrn
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[VatCustomerInfo]] = {
-    val url = new URL(baseUrl, s"/vat/customer/vrn/${encodePathSegment(vrn.value)}/information")
-    getWithDesHeaders[VatCustomerInfo]("GetVatCustomerInformation", url.toString)
   }
 
-  private def getWithDesHeaders[T: HttpReads](apiName: String, url: String)(implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext
-  ): Future[Option[T]] = {
-    val desHeader =
-      Seq(
+  def getUserIdForEnrolment(enrolmentKey: String)(implicit sessionHeaders: HeaderCarrier): Future[String] = {
+    val encodedKnownFact = encodePathSegment(enrolmentKey)
+    val uri = uri"$AgentsExternalStubsUri/known-facts/$encodedKnownFact"
+
+    http
+      .get(uri.toJavaUri.toURL)
+      .execute[HttpResponse]
+      .map { response =>
+        (response.json \ "user" \ "userId").as[String]
+      }
+  }
+
+  def getBusinessDetails(nino: Nino)(implicit sessionHeaders: HeaderCarrier): Future[Option[BusinessDetails]] =
+    getWithDesHeaders[BusinessDetails](
+      uri"$baseUrl/registration/business-details/nino/${encodePathSegment(nino.value)}"
+    )
+
+  def getVatCustomerInformation(vrn: Vrn)(implicit sessionHeaders: HeaderCarrier): Future[Option[VatCustomerInfo]] =
+    getWithDesHeaders[VatCustomerInfo](
+      uri"$baseUrl/vat/customer/vrn/${encodePathSegment(vrn.value)}/information"
+    )
+
+  private def getWithDesHeaders[T: HttpReads](url: Uri)(implicit sessionHeaders: HeaderCarrier): Future[Option[T]] =
+    http
+      .get(url.toJavaUri.toURL)
+      .setHeader(
         authorisation -> "Bearer 123",
         "Environment" -> "test"
       )
-    http.get(new URL(url)).setHeader(desHeader: _*).execute[Option[T]]
-  }
+      .execute[Option[T]]
 
   private def encodePathSegment(pathSegment: String): String =
     UriEncoding.encodePathSegment(pathSegment, StandardCharsets.UTF_8.name)
