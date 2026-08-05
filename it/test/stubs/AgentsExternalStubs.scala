@@ -65,6 +65,15 @@ trait AgentsExternalStubs {
       get(urlEqualTo(s"/agents-external-stubs/known-facts/$enrolmentKey"))
         .willReturn(
           aResponse()
+            .withStatus(404)
+        )
+    )
+    stubFor(
+      get(urlEqualTo(s"/agents-external-stubs/known-facts/$enrolmentKey"))
+        .withHeader("Authorization", containing(s"Bearer FOO-"))
+        .withHeader("X-Session-ID", containing(s"BAR-"))
+        .willReturn(
+          aResponse()
             .withStatus(200)
             .withBody(s"""{
                          |  "enrolmentKey":"$enrolmentKey",
@@ -84,6 +93,16 @@ trait AgentsExternalStubs {
   def givenUserIdForNino(nino: String): Unit = {
     stubFor(
       get(urlEqualTo(s"/agents-external-stubs/users/nino/$nino"))
+        .willReturn(
+          aResponse()
+            .withStatus(404)
+        )
+    )
+
+    stubFor(
+      get(urlEqualTo(s"/agents-external-stubs/users/nino/$nino"))
+        .withHeader("Authorization", containing(s"Bearer FOO-"))
+        .withHeader("X-Session-ID", containing(s"BAR-"))
         .willReturn(
           aResponse()
             .withStatus(200)

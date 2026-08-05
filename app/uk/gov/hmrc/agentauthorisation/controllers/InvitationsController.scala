@@ -37,12 +37,12 @@ class InvitationsController @Inject() (
 
   def acceptInvitation(inviteId: String): Action[AnyContent] = Action.async {
     for {
-      maybeInvitation <- getInvitation(inviteId)
+      (sessionHeaders, maybeInvitation) <- getInvitation(inviteId)
       result <- maybeInvitation match {
                   case None => Future.successful(NotFound)
                   case Some(invitation) =>
                     invitation.status match {
-                      case "Pending"              => acceptPendingInvitation(invitation)
+                      case "Pending"              => acceptPendingInvitation(invitation, sessionHeaders)
                       case "Rejected" | "Expired" => Future.successful(Conflict)
                       case "Accepted"             => Future.successful(NoContent)
                       case _                      => Future.successful(Forbidden)
@@ -53,12 +53,12 @@ class InvitationsController @Inject() (
 
   def rejectInvitation(id: String): Action[AnyContent] = Action.async {
     for {
-      maybeInvitation <- getInvitation(id)
+      (sessionHeaders, maybeInvitation) <- getInvitation(id)
       result <- maybeInvitation match {
                   case None => Future.successful(NotFound)
                   case Some(invitation) =>
                     invitation.status match {
-                      case "Pending"              => rejectPendingInvitation(invitation)
+                      case "Pending"              => rejectPendingInvitation(invitation, sessionHeaders)
                       case "Accepted" | "Expired" => Future.successful(Conflict)
                       case "Rejected"             => Future.successful(NoContent)
                       case _                      => Future.successful(Forbidden)
@@ -67,22 +67,22 @@ class InvitationsController @Inject() (
     } yield result
   }
 
-  private def getInvitation(inviteId: String): Future[Option[Invitation]] =
+  private def getInvitation(inviteId: String): Future[(HeaderCarrier, Option[Invitation])] =
     for {
       sessionHeaders  <- agentsExternalStubsConnector.signInAndGetSessionHeaders("Alf")(BlankSession)
       maybeInvitation <- agentClientRelationshipsConnector.getInvitation(inviteId)(sessionHeaders)
-    } yield maybeInvitation
+    } yield (sessionHeaders, maybeInvitation)
 
-  private def acceptPendingInvitation(invitation: Invitation): Future[Result] =
+  private def acceptPendingInvitation(invitation: Invitation, sessionHeaders: HeaderCarrier): Future[Result] =
     for {
-      userId         <- getUserId(invitation)(BlankSession)
+      userId         <- getUserId(invitation)(sessionHeaders)
       sessionHeaders <- agentsExternalStubsConnector.signInAndGetSessionHeaders(userId)(BlankSession)
       status         <- agentClientRelationshipsConnector.acceptInvitation(invitation.invitationId)(sessionHeaders)
     } yield statusAsResponse(status, invitation)
 
-  private def rejectPendingInvitation(invitation: Invitation): Future[Result] =
+  private def rejectPendingInvitation(invitation: Invitation, sessionHeaders: HeaderCarrier): Future[Result] =
     for {
-      userId         <- getUserId(invitation)(BlankSession)
+      userId         <- getUserId(invitation)(sessionHeaders)
       sessionHeaders <- agentsExternalStubsConnector.signInAndGetSessionHeaders(userId)(BlankSession)
       status         <- agentClientRelationshipsConnector.rejectInvitation(invitation.invitationId)(sessionHeaders)
     } yield statusAsResponse(status, invitation)
