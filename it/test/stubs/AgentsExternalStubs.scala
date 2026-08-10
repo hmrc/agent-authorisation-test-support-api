@@ -16,7 +16,7 @@
 
 package stubs
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 
 trait AgentsExternalStubs {
   self: TestIdentifiers =>

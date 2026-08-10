@@ -18,34 +18,32 @@ package uk.gov.hmrc.agentauthorisation.controllers.api
 
 import controllers.Assets
 import play.api.Configuration
-import play.api.http.HttpErrorHandler
+import play.api.http.ContentTypes
 import play.api.libs.json.{Json, OFormat}
-import play.api.mvc._
+import play.api.mvc.*
 import uk.gov.hmrc.agentauthorisation.views.txt
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
 
 case class ApiAccess(`type`: String)
 
-object ApiAccess {
-  implicit lazy val formats: OFormat[ApiAccess] = Json.format[ApiAccess]
-}
+object ApiAccess:
+  given OFormat[ApiAccess] = Json.format[ApiAccess]
 
 @Singleton
 class DocumentationController @Inject() (
-  errorHandler: HttpErrorHandler,
   configuration: Configuration,
   cc: ControllerComponents,
   assets: Assets
-) extends uk.gov.hmrc.api.controllers.DocumentationController(cc, assets, errorHandler) {
+) extends BackendController(cc):
 
-  private lazy val apiAccess = {
+  private lazy val apiAccess =
     val accessType = configuration.getOptional[String]("api.access.type").getOrElse("PUBLIC")
     ApiAccess(accessType)
-  }
 
-  override def definition(): Action[AnyContent] = Action {
-    Ok(txt.definition(apiAccess))
-      .withHeaders("Content-Type" -> "application/json")
-  }
-}
+  def documentation(version: String, endpointName: String): Action[AnyContent] =
+    assets.at(s"/public/api/documentation/$version", s"${endpointName.replaceAll(" ", "-")}.xml")
+
+  def definition(): Action[AnyContent] = Action:
+    Ok(txt.definition(apiAccess)).as(ContentTypes.JSON)

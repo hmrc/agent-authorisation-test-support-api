@@ -30,5 +30,5 @@ case class Invitation(
 )
 
 object Invitation {
-  implicit val formats: OFormat[Invitation] = Json.format[Invitation]
+  given formats: OFormat[Invitation] = Json.format[Invitation]
 }

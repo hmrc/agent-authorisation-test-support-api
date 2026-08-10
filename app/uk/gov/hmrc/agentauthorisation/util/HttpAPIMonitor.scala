@@ -20,12 +20,9 @@ import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait HttpAPIMonitor {
+trait HttpAPIMonitor:
 
   val metrics: Metrics
-  implicit val ec: ExecutionContext
-  def monitor[A](str: String)(f: => Future[A]): Future[A] = {
+  def monitor[A](str: String)(f: => Future[A])(using ec: ExecutionContext): Future[A] =
     val timerContext = metrics.defaultRegistry.timer(s"Timer-$str").time()
     f.andThen { case _ => timerContext.stop() }
-  }
-}

@@ -33,9 +33,9 @@ object ApiTestSupport {
 
 }
 
-abstract class ApiTestSupport(implicit ws: WSClient, ec: ExecutionContext) {
+abstract class ApiTestSupport(using ws: WSClient, ec: ExecutionContext) {
 
-  val runningPort: Int
+  def runningPort: Int
 
   private val definitionPath = "/api/definition"
   private val xmlDocumentationPath = "/api/documentation"

@@ -11,7 +11,7 @@ addSbtPlugin("org.scalastyle" % "scalastyle-sbt-plugin" % "1.0.0" exclude ("org.
 
 addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.6.4") // provides sbt command "dependencyUpdates"
 
-//fix for scoverage compile errors for scala 2.13.x
+// Keep scala-xml dependency resolution consistent across Scala versions.
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
 
 addDependencyTreePlugin

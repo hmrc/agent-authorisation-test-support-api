@@ -27,7 +27,7 @@ case class BusinessData(businessAddressDetails: BusinessAddressDetails)
 case class BusinessAddressDetails(countryCode: String, postalCode: Option[String])
 
 object BusinessDetails {
-  implicit val businessAddressDetailsReads: Reads[BusinessAddressDetails] = reads[BusinessAddressDetails]
-  implicit val businessDataReads: Reads[BusinessData] = reads[BusinessData]
-  implicit val businessDetailsReads: Reads[BusinessDetails] = reads[BusinessDetails]
+  given businessAddressDetailsReads: Reads[BusinessAddressDetails] = reads[BusinessAddressDetails]
+  given businessDataReads: Reads[BusinessData] = reads[BusinessData]
+  given businessDetailsReads: Reads[BusinessDetails] = reads[BusinessDetails]
 }

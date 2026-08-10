@@ -18,16 +18,16 @@ package uk.gov.hmrc.agentauthorisation
 
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
-import play.api.http.Status._
-import play.api.mvc._
-import uk.gov.hmrc.agentauthorisation.controllers.ErrorResponse._
+import play.api.http.Status.*
+import play.api.mvc.*
+import uk.gov.hmrc.agentauthorisation.controllers.ErrorResponse.*
 import uk.gov.hmrc.play.bootstrap.config.HttpAuditEvent
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.backend.http.JsonErrorHandler
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ErrorHandler @Inject() (auditConnector: AuditConnector, httpAuditEvent: HttpAuditEvent)(implicit
+class ErrorHandler @Inject() (auditConnector: AuditConnector, httpAuditEvent: HttpAuditEvent)(using
   ec: ExecutionContext,
   configuration: Configuration
 ) extends JsonErrorHandler(auditConnector, httpAuditEvent, configuration) {

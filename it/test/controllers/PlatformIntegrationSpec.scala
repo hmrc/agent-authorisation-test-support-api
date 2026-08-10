@@ -19,12 +19,12 @@ package controllers
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.{status => _, _}
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration._
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.*
 import play.api.http.Status.{NO_CONTENT, OK}
 import play.api.libs.json.JsValue
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import support.BaseISpec
 import uk.gov.hmrc.agentauthorisation.controllers.api.{DocumentationController, YamlController}
 
@@ -64,6 +64,7 @@ class PlatformIntegrationSpec extends BaseISpec {
 
       val result: Future[Result] = documentationController.definition()(request)
       status(result) shouldBe OK
+      contentType(result) shouldBe Some("application/json")
 
       val jsonResponse: JsValue = contentAsJson(result)
 

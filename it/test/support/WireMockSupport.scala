@@ -19,7 +19,7 @@ package support
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration._
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.*
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 import play.api.Logger
 
@@ -44,7 +44,7 @@ trait WireMockSupport extends BeforeAndAfterAll with BeforeAndAfterEach {
   val wireMockHost = "localhost"
   val wireMockBaseUrlAsString = s"http://$wireMockHost:$wireMockPort"
   val wireMockBaseUrl = new URL(wireMockBaseUrlAsString)
-  protected implicit val implicitWireMockBaseUrl: WireMockBaseUrl =
+  protected given wireMockBaseUrlValue: WireMockBaseUrl =
     WireMockBaseUrl(wireMockBaseUrl)
 
   protected def basicWireMockConfig(): WireMockConfiguration = wireMockConfig()
@@ -105,7 +105,7 @@ object Port {
         false
       }
     catch {
-      case t: Throwable => false
+      case _: Throwable => false
     } finally
       if (socket != null) socket.close()
   }

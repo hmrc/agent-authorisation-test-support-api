@@ -21,6 +21,6 @@ import uk.gov.hmrc.domain.{SimpleObjectReads, SimpleObjectWrites, TaxIdentifier}
 case class Arn(value: String) extends TaxIdentifier
 
 object Arn {
-  implicit val arnReads: SimpleObjectReads[Arn] = new SimpleObjectReads[Arn]("value", Arn.apply)
-  implicit val arnWrites: SimpleObjectWrites[Arn] = new SimpleObjectWrites[Arn](_.value)
+  given arnReads: SimpleObjectReads[Arn] = new SimpleObjectReads[Arn]("value", Arn.apply)
+  given arnWrites: SimpleObjectWrites[Arn] = new SimpleObjectWrites[Arn](_.value)
 }
