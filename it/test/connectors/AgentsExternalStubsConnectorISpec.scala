@@ -34,8 +34,8 @@ class AgentsExternalStubsConnectorISpec extends BaseISpec with AgentsExternalStu
       givenUserAuthenticatedInStubs("Alf")
       val result = connector.signInAndGetSessionHeaders("Alf").futureValue
 
-      result.authorization.map(_.value) shouldBe Some("Bearer FOO-Alf")
-      result.sessionId.map(_.value) shouldBe Some("BAR-Alf")
+      result.authorization.map(_.value).shouldBe(Some("Bearer FOO-Alf"))
+      result.sessionId.map(_.value).shouldBe(Some("BAR-Alf"))
     }
   }
 
