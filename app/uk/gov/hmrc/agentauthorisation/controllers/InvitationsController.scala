@@ -37,7 +37,7 @@ class InvitationsController @Inject() (
 
   def acceptInvitation(inviteId: String): Action[AnyContent] = Action.async {
     for {
-      (sessionHeaders, maybeInvitation) <- getInvitation(inviteId)
+      (maybeInvitation, sessionHeaders) <- getInvitation(inviteId)
       result <- maybeInvitation match {
                   case None => Future.successful(NotFound)
                   case Some(invitation) =>
@@ -53,7 +53,7 @@ class InvitationsController @Inject() (
 
   def rejectInvitation(id: String): Action[AnyContent] = Action.async {
     for {
-      (sessionHeaders, maybeInvitation) <- getInvitation(id)
+      (maybeInvitation, sessionHeaders) <- getInvitation(id)
       result <- maybeInvitation match {
                   case None => Future.successful(NotFound)
                   case Some(invitation) =>
@@ -67,11 +67,11 @@ class InvitationsController @Inject() (
     } yield result
   }
 
-  private def getInvitation(inviteId: String): Future[(HeaderCarrier, Option[Invitation])] =
+  private def getInvitation(inviteId: String): Future[(Option[Invitation], HeaderCarrier)] =
     for {
       sessionHeaders  <- agentsExternalStubsConnector.signInAndGetSessionHeaders("Alf")(using BlankSession)
       maybeInvitation <- agentClientRelationshipsConnector.getInvitation(inviteId)(using sessionHeaders)
-    } yield (sessionHeaders, maybeInvitation)
+    } yield (maybeInvitation, sessionHeaders)
 
   private def acceptPendingInvitation(invitation: Invitation, sessionHeaders: HeaderCarrier): Future[Result] =
     for {
