@@ -25,39 +25,39 @@ class ClientIdTypeSpec extends AnyWordSpecLike with Matchers {
   "NinoType" should {
 
     "instantiate with the correct values" in {
-      NinoType.clazz shouldBe classOf[Nino]
-      NinoType.id shouldBe "ni"
-      NinoType.enrolmentId shouldBe "NINO"
+      ClientIdType.NinoType.clazz shouldBe classOf[Nino]
+      ClientIdType.NinoType.id shouldBe "ni"
+      ClientIdType.NinoType.enrolmentId shouldBe "NINO"
     }
 
     "validate a Nino" in {
-      NinoType.isValid("AA112233A") shouldBe true
+      ClientIdType.NinoType.isValid("AA112233A") shouldBe true
     }
 
     "invalidate a Nino" in {
-      NinoType.isValid("A") shouldBe false
-      NinoType.isValid("") shouldBe false
-      NinoType.isValid("123") shouldBe false
-      NinoType.isValid("AA!!22££A") shouldBe false
+      ClientIdType.NinoType.isValid("A") shouldBe false
+      ClientIdType.NinoType.isValid("") shouldBe false
+      ClientIdType.NinoType.isValid("123") shouldBe false
+      ClientIdType.NinoType.isValid("AA!!22££A") shouldBe false
     }
   }
 
   "MtdItIdType" should {
 
     "instantiate with the correct values" in {
-      MtdItIdType.clazz shouldBe classOf[MtdItId]
-      MtdItIdType.id shouldBe "MTDITID"
-      MtdItIdType.enrolmentId shouldBe "MTDITID"
+      ClientIdType.MtdItIdType.clazz shouldBe classOf[MtdItId]
+      ClientIdType.MtdItIdType.id shouldBe "MTDITID"
+      ClientIdType.MtdItIdType.enrolmentId shouldBe "MTDITID"
     }
 
     "validate an MTDITID" in {
-      MtdItIdType.isValid("ABCDEFG12345678") shouldBe true
+      ClientIdType.MtdItIdType.isValid("ABCDEFG12345678") shouldBe true
     }
 
     "invalidate an MTDITID" in {
-      MtdItIdType.isValid("") shouldBe false
-      MtdItIdType.isValid("0000000000000000") shouldBe false
-      MtdItIdType.isValid("00000000000000!") shouldBe false
+      ClientIdType.MtdItIdType.isValid("") shouldBe false
+      ClientIdType.MtdItIdType.isValid("0000000000000000") shouldBe false
+      ClientIdType.MtdItIdType.isValid("00000000000000!") shouldBe false
     }
   }
 }

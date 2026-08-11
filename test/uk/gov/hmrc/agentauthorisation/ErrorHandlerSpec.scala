@@ -19,13 +19,13 @@ package uk.gov.hmrc.agentauthorisation
 import org.apache.pekko.actor.ActorSystem
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
-import org.scalatestplus.mockito.MockitoSugar._
+import org.scalatestplus.mockito.MockitoSugar.*
 import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import uk.gov.hmrc.agentauthorisation.controllers.ErrorResponse._
+import play.api.test.Helpers.*
+import uk.gov.hmrc.agentauthorisation.controllers.ErrorResponse.*
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.bootstrap.config.HttpAuditEvent
 
@@ -35,15 +35,15 @@ import scala.concurrent.Future
 class ErrorHandlerSpec extends AnyWordSpecLike with Matchers {
 
   trait BaseSetup {
-    implicit val sys: ActorSystem = ActorSystem("MyTest")
-    implicit val configuration: Configuration = Configuration(
+    given sys: ActorSystem = ActorSystem("MyTest")
+    given configuration: Configuration = Configuration(
       "bootstrap.errorHandler.warnOnly.statusCodes"     -> List.empty,
       "bootstrap.errorHandler.suppress4xxErrorMessages" -> false,
       "bootstrap.errorHandler.suppress5xxErrorMessages" -> false,
       "auditing.enabled"                                -> false
     )
 
-    implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+    given fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
     val mockAuditConnector: AuditConnector = mock[AuditConnector]
     val mockAuditResult: AuditResult = mock[AuditResult]
     val mockHttpAuditEvent: HttpAuditEvent = mock[HttpAuditEvent]

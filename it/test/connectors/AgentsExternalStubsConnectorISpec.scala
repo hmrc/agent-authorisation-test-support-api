@@ -25,7 +25,7 @@ class AgentsExternalStubsConnectorISpec extends BaseISpec with AgentsExternalStu
 
   val connector: AgentsExternalStubsConnector = app.injector.instanceOf[AgentsExternalStubsConnector]
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  given hc: HeaderCarrier = HeaderCarrier()
 
   "signInAndGetSessionHeaders" should {
 
@@ -34,8 +34,8 @@ class AgentsExternalStubsConnectorISpec extends BaseISpec with AgentsExternalStu
       givenUserAuthenticatedInStubs("Alf")
       val result = connector.signInAndGetSessionHeaders("Alf").futureValue
 
-      result.authorization.map(_.value) shouldBe Some("Bearer FOO-Alf")
-      result.sessionId.map(_.value) shouldBe Some("BAR-Alf")
+      result.authorization.map(_.value).shouldBe(Some("Bearer FOO-Alf"))
+      result.sessionId.map(_.value).shouldBe(Some("BAR-Alf"))
     }
   }
 
@@ -46,9 +46,9 @@ class AgentsExternalStubsConnectorISpec extends BaseISpec with AgentsExternalStu
       givenUserIdForNino(nino)
       val session =
         HeaderCarrier(authorization = Some(Authorization("Bearer FOO-Alf")), sessionId = Some(SessionId("BAR-Alf")))
-      val result = connector.getUserIdForNino(nino)(session).futureValue
+      val result = connector.getUserIdForNino(nino)(using session).futureValue
 
-      result shouldBe userIdITSA
+      result.shouldBe(userIdITSA)
     }
   }
 
@@ -63,9 +63,9 @@ class AgentsExternalStubsConnectorISpec extends BaseISpec with AgentsExternalStu
           authorization = Some(Authorization(s"Bearer FOO-$userIdITSA")),
           sessionId = Some(SessionId(s"BAR-$userIdITSA"))
         )
-      val result = connector.getUserIdForEnrolment(enrolmentKey)(session).futureValue
+      val result = connector.getUserIdForEnrolment(enrolmentKey)(using session).futureValue
 
-      result shouldBe userIdITSA
+      result.shouldBe(userIdITSA)
     }
 
     "return the userId for a given VAT enrolment key" in {
@@ -77,9 +77,9 @@ class AgentsExternalStubsConnectorISpec extends BaseISpec with AgentsExternalStu
           authorization = Some(Authorization("Bearer FOO-VATClient001")),
           sessionId = Some(SessionId("BAR-VATClient001"))
         )
-      val result = connector.getUserIdForEnrolment(enrolmentKey)(session).futureValue
+      val result = connector.getUserIdForEnrolment(enrolmentKey)(using session).futureValue
 
-      result shouldBe "VATClient001"
+      result.shouldBe("VATClient001")
     }
   }
 }

@@ -26,7 +26,7 @@ class AgentClientRelationshipsConnectorISpec extends BaseISpec with ACRStubs wit
 
   val connector: AgentClientRelationshipsConnector = app.injector.instanceOf[AgentClientRelationshipsConnector]
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  given hc: HeaderCarrier = HeaderCarrier()
 
   val itsaInvitation: Invitation = Invitation(
     invitationIdITSA,

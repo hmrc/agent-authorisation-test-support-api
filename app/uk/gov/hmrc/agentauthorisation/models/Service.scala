@@ -18,15 +18,13 @@ package uk.gov.hmrc.agentauthorisation.models
 
 import uk.gov.hmrc.domain.TaxIdentifier
 
-sealed abstract class Service(
+enum Service(
   val id: String,
   val invitationIdPrefix: Char,
   val enrolmentKey: String,
-  val supportedSuppliedClientIdType: ClientIdType[_ <: TaxIdentifier],
-  val supportedClientIdType: ClientIdType[_ <: TaxIdentifier]
-)
-
-object Service {
-  case object MtdIt extends Service("HMRC-MTD-IT", 'A', "HMRC-MTD-IT", NinoType, MtdItIdType)
-  case object MtdItSupp extends Service("HMRC-MTD-IT-SUPP", 'L', "HMRC-MTD-IT-SUPP", NinoType, MtdItIdType)
-}
+  val supportedSuppliedClientIdType: ClientIdType[? <: TaxIdentifier],
+  val supportedClientIdType: ClientIdType[? <: TaxIdentifier]
+):
+  case MtdIt extends Service("HMRC-MTD-IT", 'A', "HMRC-MTD-IT", ClientIdType.NinoType, ClientIdType.MtdItIdType)
+  case MtdItSupp
+      extends Service("HMRC-MTD-IT-SUPP", 'L', "HMRC-MTD-IT-SUPP", ClientIdType.NinoType, ClientIdType.MtdItIdType)

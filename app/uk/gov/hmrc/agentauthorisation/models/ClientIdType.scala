@@ -18,19 +18,16 @@ package uk.gov.hmrc.agentauthorisation.models
 
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 
-sealed abstract class ClientIdType[+T <: TaxIdentifier](
-  val clazz: Class[_],
+enum ClientIdType[+T <: TaxIdentifier](
+  val clazz: Class[?],
   val id: String,
   val enrolmentId: String,
   val createUnderlying: String => T
-) {
-  def isValid(value: String): Boolean
-}
+):
+  case NinoType extends ClientIdType[Nino](classOf[Nino], "ni", "NINO", Nino.apply)
 
-case object NinoType extends ClientIdType(classOf[Nino], "ni", "NINO", Nino.apply) {
-  override def isValid(value: String): Boolean = Nino.isValid(value)
-}
+  case MtdItIdType extends ClientIdType[MtdItId](classOf[MtdItId], "MTDITID", "MTDITID", MtdItId.apply)
 
-case object MtdItIdType extends ClientIdType(classOf[MtdItId], "MTDITID", "MTDITID", MtdItId.apply) {
-  override def isValid(value: String): Boolean = MtdItId.isValid(value)
-}
+  def isValid(value: String): Boolean = this match
+    case ClientIdType.NinoType    => Nino.isValid(value)
+    case ClientIdType.MtdItIdType => MtdItId.isValid(value)

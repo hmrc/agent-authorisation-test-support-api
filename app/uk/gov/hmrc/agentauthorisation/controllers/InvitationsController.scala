@@ -30,7 +30,7 @@ class InvitationsController @Inject() (
   agentClientRelationshipsConnector: AgentClientRelationshipsConnector,
   agentsExternalStubsConnector: AgentsExternalStubsConnector,
   controllerComponents: ControllerComponents
-)(implicit ec: ExecutionContext)
+)(using ec: ExecutionContext)
     extends BackendController(controllerComponents) {
 
   private val BlankSession = HeaderCarrier()
@@ -69,22 +69,22 @@ class InvitationsController @Inject() (
 
   private def getInvitation(inviteId: String): Future[(HeaderCarrier, Option[Invitation])] =
     for {
-      sessionHeaders  <- agentsExternalStubsConnector.signInAndGetSessionHeaders("Alf")(BlankSession)
-      maybeInvitation <- agentClientRelationshipsConnector.getInvitation(inviteId)(sessionHeaders)
+      sessionHeaders  <- agentsExternalStubsConnector.signInAndGetSessionHeaders("Alf")(using BlankSession)
+      maybeInvitation <- agentClientRelationshipsConnector.getInvitation(inviteId)(using sessionHeaders)
     } yield (sessionHeaders, maybeInvitation)
 
   private def acceptPendingInvitation(invitation: Invitation, sessionHeaders: HeaderCarrier): Future[Result] =
     for {
-      userId         <- getUserId(invitation)(sessionHeaders)
-      sessionHeaders <- agentsExternalStubsConnector.signInAndGetSessionHeaders(userId)(BlankSession)
-      status         <- agentClientRelationshipsConnector.acceptInvitation(invitation.invitationId)(sessionHeaders)
+      userId         <- getUserId(invitation)(using sessionHeaders)
+      sessionHeaders <- agentsExternalStubsConnector.signInAndGetSessionHeaders(userId)(using BlankSession)
+      status <- agentClientRelationshipsConnector.acceptInvitation(invitation.invitationId)(using sessionHeaders)
     } yield statusAsResponse(status, invitation)
 
   private def rejectPendingInvitation(invitation: Invitation, sessionHeaders: HeaderCarrier): Future[Result] =
     for {
-      userId         <- getUserId(invitation)(sessionHeaders)
-      sessionHeaders <- agentsExternalStubsConnector.signInAndGetSessionHeaders(userId)(BlankSession)
-      status         <- agentClientRelationshipsConnector.rejectInvitation(invitation.invitationId)(sessionHeaders)
+      userId         <- getUserId(invitation)(using sessionHeaders)
+      sessionHeaders <- agentsExternalStubsConnector.signInAndGetSessionHeaders(userId)(using BlankSession)
+      status <- agentClientRelationshipsConnector.rejectInvitation(invitation.invitationId)(using sessionHeaders)
     } yield statusAsResponse(status, invitation)
 
   private def statusAsResponse(status: Int, invitation: Invitation): Result =
@@ -105,7 +105,7 @@ class InvitationsController @Inject() (
     case _                  => throw new Exception("Unsupported service type")
   }
 
-  private def getUserId(invitation: Invitation)(implicit sessionHeaders: HeaderCarrier): Future[String] =
+  private def getUserId(invitation: Invitation)(using sessionHeaders: HeaderCarrier): Future[String] =
     invitation.suppliedClientIdType match {
       case "ni" => agentsExternalStubsConnector.getUserIdForNino(invitation.suppliedClientId)
       case _    => agentsExternalStubsConnector.getUserIdForEnrolment(enrolmentKeyFor(invitation))

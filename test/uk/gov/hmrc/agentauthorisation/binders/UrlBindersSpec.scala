@@ -27,30 +27,30 @@ class UrlBindersSpec extends AnyWordSpecLike with Matchers {
   "NinoBinder" should {
 
     "bind a key-value pair to a Nino" in {
-      NinoBinder.bind("nino", "AA001122A") shouldBe Right(Nino("AA001122A"))
+      NinoBinder.bind("nino", "AA001122A").shouldBe(Right(Nino("AA001122A")))
     }
 
     "unbind a Nino to a String" in {
-      NinoBinder.unbind("nino", Nino("AA001122A")) shouldBe "AA001122A"
+      NinoBinder.unbind("nino", Nino("AA001122A")).shouldBe("AA001122A")
     }
 
     "fail to bind a key-value pair where the value does not match the Nino format" in {
-      NinoBinder.bind("nino", "A") shouldBe Left("Cannot parse parameter 'nino' with value 'A' as 'Nino'")
+      NinoBinder.bind("nino", "A").shouldBe(Left("Cannot parse parameter 'nino' with value 'A' as 'Nino'"))
     }
   }
 
   "VrnBinder" should {
 
     "bind a key-value pair to a Vrn" in {
-      VrnBinder.bind("vrn", "123456789") shouldBe Right(Vrn("123456789"))
+      VrnBinder.bind("vrn", "123456789").shouldBe(Right(Vrn("123456789")))
     }
 
     "unbind a Vrn to a String" in {
-      VrnBinder.unbind("vrn", Vrn("123456789")) shouldBe "123456789"
+      VrnBinder.unbind("vrn", Vrn("123456789")).shouldBe("123456789")
     }
 
     "fail to bind a key-value pair where the value does not match the Vrn format" in {
-      VrnBinder.bind("vrn", "A") shouldBe Left("Cannot parse parameter 'vrn' with value 'A' as 'Vrn'")
+      VrnBinder.bind("vrn", "A").shouldBe(Left("Cannot parse parameter 'vrn' with value 'A' as 'Vrn'"))
     }
   }
 }

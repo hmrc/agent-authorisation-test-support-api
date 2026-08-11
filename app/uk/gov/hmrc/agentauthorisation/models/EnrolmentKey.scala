@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentauthorisation.models
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 case class EnrolmentKey(service: String, identifiers: Seq[Identifier]) {
   lazy val tag = s"$service~${identifiers.sorted.mkString("~")}"
@@ -24,11 +24,11 @@ case class EnrolmentKey(service: String, identifiers: Seq[Identifier]) {
 }
 
 object EnrolmentKey {
-  implicit val writes: Writes[EnrolmentKey] = new Writes[EnrolmentKey] {
+  given writes: Writes[EnrolmentKey] = new Writes[EnrolmentKey] {
     override def writes(ek: EnrolmentKey): JsValue = JsString(ek.toString)
   }
 
-  implicit val reads: Reads[EnrolmentKey] = new Reads[EnrolmentKey] {
+  given reads: Reads[EnrolmentKey] = new Reads[EnrolmentKey] {
     override def reads(json: JsValue): JsResult[EnrolmentKey] = json match {
       case JsString(value) => parse(value).fold(JsError.apply, JsSuccess.apply(_))
       case _               => JsError("STRING_VALUE_EXPECTED")

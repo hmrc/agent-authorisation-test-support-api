@@ -35,7 +35,7 @@ abstract class BaseISpec
     with WireMockSupport
     with DataStreamStubs {
 
-  override implicit lazy val app: Application = appBuilder.build()
+  override given app: Application = appBuilder.build()
 
   protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
@@ -50,7 +50,7 @@ abstract class BaseISpec
         "api.supported-versions"                                -> Seq("1.0")
       )
 
-  protected implicit val materializer: Materializer = app.materializer
+  protected given materializer: Materializer = app.materializer
 
   def commonStubs(): Unit =
     givenAuditConnector()

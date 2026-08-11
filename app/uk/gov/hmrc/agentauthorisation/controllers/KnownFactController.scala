@@ -36,9 +36,9 @@ class KnownFactController @Inject() (
   controllerComponents: ControllerComponents
 ) extends BackendController(controllerComponents) {
 
-  implicit val ec: ExecutionContext = ecp.get
+  given ec: ExecutionContext = ecp.get
 
-  import KnownFactController._
+  import KnownFactController.*
 
   private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
@@ -51,9 +51,9 @@ class KnownFactController @Inject() (
         assignedPrincipalEnrolments = Seq(EnrolmentKey("HMRC-MTD-VAT", Seq(Identifier("VRN", vrn.value))))
       )
     for {
-      sessionHeaders         <- stubsConnector.signInAndGetSessionHeaders("Alf")(HeaderCarrier())
-      _                      <- stubsConnector.createUser(user, Individual)(sessionHeaders)
-      vatCustomerInformation <- stubsConnector.getVatCustomerInformation(vrn)(sessionHeaders)
+      sessionHeaders         <- stubsConnector.signInAndGetSessionHeaders("Alf")(using HeaderCarrier())
+      _                      <- stubsConnector.createUser(user, Individual)(using sessionHeaders)
+      vatCustomerInformation <- stubsConnector.getVatCustomerInformation(vrn)(using sessionHeaders)
     } yield vatCustomerInformation.flatMap(_.effectiveRegistrationDate) match {
       case Some(date) =>
         Ok(Json.toJson(KnownFactResponse(Seq("MTD-VAT"), "personal", "vrn", vrn.value, date.format(dateFormat))))
@@ -71,9 +71,9 @@ class KnownFactController @Inject() (
         assignedPrincipalEnrolments = Seq(EnrolmentKey("HMRC-MTD-IT", Seq.empty))
       )
     for {
-      sessionHeaders  <- stubsConnector.signInAndGetSessionHeaders("Alf")(HeaderCarrier())
-      _               <- stubsConnector.createUser(user, Individual)(sessionHeaders)
-      businessDetails <- stubsConnector.getBusinessDetails(nino)(sessionHeaders)
+      sessionHeaders  <- stubsConnector.signInAndGetSessionHeaders("Alf")(using HeaderCarrier())
+      _               <- stubsConnector.createUser(user, Individual)(using sessionHeaders)
+      businessDetails <- stubsConnector.getBusinessDetails(nino)(using sessionHeaders)
     } yield businessDetails.flatMap(
       _.businessData.headOption
         .flatMap(_.businessAddressDetails.postalCode)
@@ -97,7 +97,7 @@ object KnownFactController {
   )
 
   object KnownFactResponse {
-    implicit val formats: Format[KnownFactResponse] =
+    given formats: Format[KnownFactResponse] =
       Json.format[KnownFactResponse]
   }
 

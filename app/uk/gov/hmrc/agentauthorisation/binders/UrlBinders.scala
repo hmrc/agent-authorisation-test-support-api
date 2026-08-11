@@ -21,7 +21,7 @@ import uk.gov.hmrc.domain.Nino
 
 object UrlBinders {
 
-  implicit object NinoBinder extends SimpleObjectBinder[Nino](Nino.apply, _.value)
-  implicit object VrnBinder extends SimpleObjectBinder[Vrn](Vrn.apply, _.value)
+  given NinoBinder: SimpleObjectBinder[Nino] = new SimpleObjectBinder[Nino](Nino.apply, _.value)
+  given VrnBinder: SimpleObjectBinder[Vrn] = new SimpleObjectBinder[Vrn](Vrn.apply, _.value)
 
 }

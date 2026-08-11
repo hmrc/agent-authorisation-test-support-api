@@ -18,8 +18,8 @@ package uk.gov.hmrc.agentauthorisation.connectors
 
 import uk.gov.hmrc.agentauthorisation.models.Invitation
 import uk.gov.hmrc.agentauthorisation.util.HttpAPIMonitor
-import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.HttpReads.Implicits.*
+import uk.gov.hmrc.http.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
@@ -32,17 +32,17 @@ class AgentClientRelationshipsConnector @Inject() (
   @Named("agent-client-relationships-baseUrl") baseUrl: URL,
   http: HttpClientV2,
   val metrics: Metrics
-)(implicit val ec: ExecutionContext)
+)(using val ec: ExecutionContext)
     extends HttpAPIMonitor {
 
-  def getInvitation(invitationId: String)(implicit sessionHeaders: HeaderCarrier): Future[Option[Invitation]] =
+  def getInvitation(invitationId: String)(using sessionHeaders: HeaderCarrier): Future[Option[Invitation]] =
     monitor(s"ConsumedAPI-Get-Invitation-GET") {
       http
         .get(url"$baseUrl/test-only/invitation/$invitationId")
         .execute[Option[Invitation]]
     }
 
-  def acceptInvitation(invitationId: String)(implicit sessionHeaders: HeaderCarrier): Future[Int] =
+  def acceptInvitation(invitationId: String)(using sessionHeaders: HeaderCarrier): Future[Int] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       val requestUrl = s"$baseUrl/agent-client-relationships/authorisation-response/accept/$invitationId"
       http
@@ -53,7 +53,7 @@ class AgentClientRelationshipsConnector @Inject() (
       ex.statusCode
     }
 
-  def rejectInvitation(invitationId: String)(implicit sessionHeaders: HeaderCarrier): Future[Int] =
+  def rejectInvitation(invitationId: String)(using sessionHeaders: HeaderCarrier): Future[Int] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       val requestUrl = s"$baseUrl/agent-client-relationships/client/authorisation-response/reject/$invitationId"
       http

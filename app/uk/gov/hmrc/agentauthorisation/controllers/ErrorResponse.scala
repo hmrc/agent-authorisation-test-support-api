@@ -17,14 +17,14 @@
 package uk.gov.hmrc.agentauthorisation.controllers
 import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.mvc.Result
-import play.api.mvc.Results._
+import play.api.mvc.Results.*
 
 case class ErrorResponse(httpStatusCode: Int, errorCode: String, message: String) {
-  lazy val toJson: JsValue = Json.toJson(this)(ErrorResponse.errorResponseWrites)
+  lazy val toJson: JsValue = Json.toJson(this)(using ErrorResponse.errorResponseWrites)
 }
 
 object ErrorResponse {
-  implicit val errorResponseWrites: Writes[ErrorResponse] = new Writes[ErrorResponse] {
+  given errorResponseWrites: Writes[ErrorResponse] = new Writes[ErrorResponse] {
     def writes(e: ErrorResponse): JsValue = Json.obj("code" -> e.errorCode, "message" -> e.message)
   }
 

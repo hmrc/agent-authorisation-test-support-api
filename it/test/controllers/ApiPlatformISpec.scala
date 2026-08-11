@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,34 @@
 
 package controllers
 
+import org.scalatest.OptionValues
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.WSClient
-import support.{BaseISpec, Resource}
+import stubs.DataStreamStubs
+import support.{Resource, WireMockSupport}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ApiPlatformISpec extends BaseISpec with GuiceOneServerPerSuite {
+class ApiPlatformISpec
+    extends AnyWordSpecLike
+    with Matchers
+    with OptionValues
+    with ScalaFutures
+    with GuiceOneServerPerSuite
+    with WireMockSupport
+    with DataStreamStubs {
 
-  override implicit lazy val app: Application = appBuilder.build()
+  override given app: Application = appBuilder.build()
 
-  implicit val hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq("Accept" -> s"application/vnd.hmrc.1.0+json"))
+  given hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq("Accept" -> s"application/vnd.hmrc.1.0+json"))
 
-  override protected def appBuilder: GuiceApplicationBuilder =
+  protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
         "auditing.enabled"                                 -> true,
@@ -41,7 +53,7 @@ class ApiPlatformISpec extends BaseISpec with GuiceOneServerPerSuite {
         "microservice.services.agents-external-stubs.port" -> wireMockPort
       )
 
-  implicit val ws: WSClient = app.injector.instanceOf[WSClient]
+  given ws: WSClient = app.injector.instanceOf[WSClient]
 
   override def commonStubs(): Unit =
     givenAuditConnector()
@@ -61,9 +73,8 @@ class ApiPlatformISpec extends BaseISpec with GuiceOneServerPerSuite {
     }
   }
 
-  "provide YAML documentation exists for all API versions" in new ApiTestSupport {
-
-    lazy override val runningPort: Int = port
+  "provide YAML documentation exists for all API versions" in new ApiTestSupport:
+    def runningPort: Int = port
 
     forAllApiVersions(yamlByVersion) { case (version, yaml) =>
       info(s"Checking API YAML documentation for version[$version] of the API")
@@ -74,7 +85,6 @@ class ApiPlatformISpec extends BaseISpec with GuiceOneServerPerSuite {
 
       withClue("RAML does not contain the title 'Agent Authorisation API'") {
         yaml should include("title: Agent Authorisation")
-
       }
 
       withClue(s"YAML does not contain a matching version declaration of [$version]") {
@@ -82,5 +92,4 @@ class ApiPlatformISpec extends BaseISpec with GuiceOneServerPerSuite {
       }
       ()
     }
-  }
 }

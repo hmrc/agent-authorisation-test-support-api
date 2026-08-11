@@ -16,14 +16,14 @@
 
 package stubs
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.libs.json.{JsValue, Json}
 import support.WireMockSupport
 
 trait ACRStubs {
 
-  me: WireMockSupport with TestIdentifiers =>
+  me: WireMockSupport & TestIdentifiers =>
 
   def invitationJson(
     invitationId: String,

@@ -28,12 +28,12 @@ import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
 @Singleton
-class AcceptHeaderFilter @Inject() (@Named("api.supported-versions") apiSupportedVersions: Seq[String])(implicit
+class AcceptHeaderFilter @Inject() (@Named("api.supported-versions") apiSupportedVersions: Seq[String])(using
   materializer: Materializer
 ) extends Filter {
-  override implicit def mat: Materializer = materializer
+  override given mat: Materializer = materializer
 
-  import AcceptHeaderFilter._
+  import AcceptHeaderFilter.*
 
   override def apply(f: RequestHeader => Future[Result])(rh: RequestHeader): Future[Result] = {
 

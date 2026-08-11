@@ -19,7 +19,7 @@ package controllers
 import com.github.tomakehurst.wiremock.client.WireMock.{status => _, _}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import play.mvc.Http.HeaderNames
 import support.BaseISpec
 import uk.gov.hmrc.agentauthorisation.controllers.KnownFactController
