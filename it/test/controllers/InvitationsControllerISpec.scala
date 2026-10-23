@@ -22,6 +22,7 @@ import play.api.test.Helpers.*
 import stubs.{ACRStubs, AgentsExternalStubs, TestIdentifiers}
 import support.BaseISpec
 import uk.gov.hmrc.agentauthorisation.controllers.InvitationsController
+import uk.gov.hmrc.agentauthorisation.models.Identifier
 
 class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExternalStubs with TestIdentifiers {
 
@@ -29,6 +30,106 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
 
   val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
     FakeRequest().withHeaders("Accept" -> s"application/vnd.hmrc.1.0+json")
+
+  private case class V3Regime(
+    name: String,
+    invitationId: String,
+    service: String,
+    clientId: String,
+    clientIdType: String,
+    prepareClient: () => Unit
+  )
+
+  private def enrolledRegime(
+    name: String,
+    invitationId: String,
+    service: String,
+    clientId: String,
+    clientIdType: String,
+    enrolmentKey: String
+  ): V3Regime =
+    V3Regime(
+      name,
+      invitationId,
+      service,
+      clientId,
+      clientIdType,
+      () => givenClientUserAuthenticatedInStubs(enrolmentKey, s"${name.replace(" ", "")}Client")
+    )
+
+  private val v3Regimes = Seq(
+    enrolledRegime(
+      "Pillar 2",
+      "K123456789012",
+      "HMRC-PILLAR2-ORG",
+      pillar2Id,
+      "PLRID",
+      s"HMRC-PILLAR2-ORG~PLRID~$pillar2Id"
+    ),
+    V3Regime(
+      "CBC UK",
+      "H123456789012",
+      "HMRC-CBC-ORG",
+      cbcId,
+      "cbcId",
+      () => {
+        val identifier = Identifier("cbcId", cbcId)
+        val fullEnrolmentKey = s"HMRC-CBC-ORG~cbcId~$cbcId~UTR~$cbcUtr"
+        givenUserAuthenticatedInStubs("Alf")
+        givenEnrolmentExpansionInStubs("HMRC-CBC-ORG", identifier, Seq(identifier, Identifier("UTR", cbcUtr)))
+        givenClientEnrolmentExistsInStubs(fullEnrolmentKey, "CBCUKClient")
+        givenUserAuthenticatedInStubs("CBCUKClient")
+      }
+    ),
+    enrolledRegime(
+      "CBC non-UK",
+      "J123456789012",
+      "HMRC-CBC-NONUK-ORG",
+      cbcId,
+      "cbcId",
+      s"HMRC-CBC-NONUK-ORG~cbcId~$cbcId"
+    ),
+    enrolledRegime(
+      "Capital Gains Tax on UK Property",
+      "E123456789012",
+      "HMRC-CGT-PD",
+      cgtReference,
+      "CGTPDRef",
+      s"HMRC-CGT-PD~CGTPDRef~$cgtReference"
+    ),
+    enrolledRegime(
+      "taxable Trusts",
+      "D123456789012",
+      "HMRC-TERS-ORG",
+      trustUtr,
+      "utr",
+      s"HMRC-TERS-ORG~SAUTR~$trustUtr"
+    ),
+    enrolledRegime(
+      "non-taxable Trusts",
+      "F123456789012",
+      "HMRC-TERSNT-ORG",
+      trustUrn,
+      "urn",
+      s"HMRC-TERSNT-ORG~URN~$trustUrn"
+    ),
+    V3Regime(
+      "Income Record Viewer",
+      "B123456789012",
+      "PERSONAL-INCOME-RECORD",
+      irvNino,
+      "ni",
+      () => givenNinoUserAuthenticatedInStubs(irvNino, "IRVClient")
+    ),
+    enrolledRegime(
+      "Plastic Packaging Tax",
+      "G123456789012",
+      "HMRC-PPT-ORG",
+      pptReference,
+      "EtmpRegistrationNumber",
+      s"HMRC-PPT-ORG~EtmpRegistrationNumber~$pptReference"
+    )
+  )
 
   "PUT /agent-authorisation-test-support/invitations/:id" when {
 
@@ -70,6 +171,17 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
         givenItsaInvitationExists("Expired")
         val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 409
+      }
+
+      Seq("Cancelled", "Partialauth").foreach { invitationStatus =>
+        s"return 409 for accepting an invitation in $invitationStatus status" in {
+          givenUserAuthenticatedInStubs("Alf")
+          givenItsaInvitationExists(invitationStatus)
+
+          val result = controller.acceptInvitation(invitationIdITSA)(fakeRequest)
+
+          status(result) shouldBe 409
+        }
       }
 
       "return 404 for unable to find invitation in request to fetch invitation" in {
@@ -264,6 +376,26 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
       }
     }
 
+    "a V3 regime" should {
+      v3Regimes.foreach { regime =>
+        s"return 204 when accepting a pending ${regime.name} invitation" in {
+          regime.prepareClient()
+          givenInvitationExists(
+            regime.invitationId,
+            "Pending",
+            regime.service,
+            regime.clientId,
+            regime.clientIdType
+          )
+          givenAcceptInvitation(regime.invitationId, 204)
+
+          val result = controller.acceptInvitation(regime.invitationId)(fakeRequest)
+
+          status(result) shouldBe 204
+        }
+      }
+    }
+
     "the regime type is not supported" should {
 
       "throw an exception detailing that there was an unsupported service type" in {
@@ -315,6 +447,17 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
         givenItsaInvitationExists("Expired")
         val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
         status(result) shouldBe 409
+      }
+
+      Seq("Cancelled", "Partialauth").foreach { invitationStatus =>
+        s"return 409 for rejecting an invitation in $invitationStatus status" in {
+          givenUserAuthenticatedInStubs("Alf")
+          givenItsaInvitationExists(invitationStatus)
+
+          val result = controller.rejectInvitation(invitationIdITSA)(fakeRequest)
+
+          status(result) shouldBe 409
+        }
       }
 
       "return 404 for unable to find invitation in request to fetch invitation" in {
@@ -506,6 +649,26 @@ class InvitationsControllerISpec extends BaseISpec with ACRStubs with AgentsExte
         givenRejectInvitation(invitationIdVAT, 499)
         val result = controller.rejectInvitation(invitationIdVAT)(fakeRequest)
         status(result) shouldBe 500
+      }
+    }
+
+    "a V3 regime" should {
+      v3Regimes.foreach { regime =>
+        s"return 204 when rejecting a pending ${regime.name} invitation" in {
+          regime.prepareClient()
+          givenInvitationExists(
+            regime.invitationId,
+            "Pending",
+            regime.service,
+            regime.clientId,
+            regime.clientIdType
+          )
+          givenRejectInvitation(regime.invitationId, 204)
+
+          val result = controller.rejectInvitation(regime.invitationId)(fakeRequest)
+
+          status(result) shouldBe 204
+        }
       }
     }
 

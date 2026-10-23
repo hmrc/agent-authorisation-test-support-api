@@ -16,21 +16,17 @@
 
 package stubs
 
-import uk.gov.hmrc.agentauthorisation.models.{Arn, MtdItId}
-import uk.gov.hmrc.domain.{Nino, Vrn}
+import uk.gov.hmrc.agentauthorisation.models.Arn
 
 trait TestIdentifiers {
 
   val arn = Arn("TARN0000001")
   val arn2 = Arn("DARN0002185")
-  val validNino = Nino("AB123456A")
-  val validNinoSpace = Nino("AB 12 34 56 A")
   val nino = "AB123456A"
 
-  val mtdItId = MtdItId("ABCDEF123456789")
+  val mtdItId = "ABCDEF123456789"
   val serviceITSA = "HMRC-MTD-IT"
   val serviceITSASupp = "HMRC-MTD-IT-SUPP"
-  val validPostcode = "DH14EJ"
   val invitationIdITSA = "ABERULMHCKKW3"
   val identifierITSA = "MTDITID"
   val identifierAltITSA = "ni"
@@ -39,12 +35,17 @@ trait TestIdentifiers {
   val invitationIdVAT = "CZTW1KY6RTAAT"
   val serviceVAT = "HMRC-MTD-VAT"
   val identifierVAT = "VRN"
-  val validVrn = Vrn("101747696")
-  val invalidVrn = Vrn("101747692")
-  val validVatRegDate = "2007-07-07"
-  val dateOfBirth = "1980-07-07"
-  val validVrn9755 = Vrn("101747641")
+  val validVrn = "101747696"
 
   val invalidInvitationId = "ZTSF4OW9CCRPT"
   val unsupportedService = "HMRC-ABC-DEF"
+
+  val pillar2Id = "XMPLR0001234567"
+  val cbcId = "XACBC0001234567"
+  val cbcUtr = "1234567890"
+  val cgtReference = "XMCGTP123456789"
+  val trustUtr = "1234567890"
+  val trustUrn = "AATRUST00000000"
+  val pptReference = "XAPPT0001234567"
+  val irvNino = "AB123456A"
 }

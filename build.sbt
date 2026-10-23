@@ -21,7 +21,6 @@ lazy val root = (project in file("."))
     organization := "uk.gov.hmrc",
     PlayKeys.playDefaultPort := 9443,
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
-    routesImport ++= Seq("uk.gov.hmrc.agentauthorisation.binders.UrlBinders.given"),
     scalacOptions ++= scalaCOptions,
     Compile / scalafmtOnCompile := true,
     Test / scalafmtOnCompile := true,

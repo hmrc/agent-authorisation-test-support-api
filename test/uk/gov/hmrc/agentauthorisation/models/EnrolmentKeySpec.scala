@@ -31,6 +31,13 @@ class EnrolmentKeySpec extends AnyWordSpecLike with Matchers {
       json.as[EnrolmentKey] shouldBe model
     }
 
+    "order identifiers case-insensitively" in {
+      EnrolmentKey(
+        "HMRC-CBC-ORG",
+        Seq(Identifier("UTR", "1234567890"), Identifier("cbcId", "XACBC0001234567"))
+      ).toString shouldBe "HMRC-CBC-ORG~cbcId~XACBC0001234567~UTR~1234567890"
+    }
+
     "write to JSON" in {
       Json.toJson(model) shouldBe json
     }

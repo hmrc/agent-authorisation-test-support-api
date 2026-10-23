@@ -24,5 +24,5 @@ case class Identifier(key: String, value: String) {
 
 object Identifier {
   given format: Format[Identifier] = Json.format[Identifier]
-  given ordering: Ordering[Identifier] = Ordering.by(_.key)
+  given ordering: Ordering[Identifier] = Ordering.by(_.key.toLowerCase)
 }

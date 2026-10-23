@@ -17,16 +17,16 @@
 package uk.gov.hmrc.agentauthorisation.connectors
 
 import play.api.http.HeaderNames
+import play.api.http.Status.NO_CONTENT
 import play.api.libs.json.Json
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import play.utils.UriEncoding
 import sttp.model.Uri
 import sttp.model.Uri.UriContext
-import uk.gov.hmrc.agentauthorisation.models.{BusinessDetails, User, VatCustomerInfo, Vrn}
+import uk.gov.hmrc.agentauthorisation.connectors.AgentsExternalStubsConnector.EnrolmentsFromKnownFactsResponse
+import uk.gov.hmrc.agentauthorisation.models.{EnrolmentKey, Identifier}
 import uk.gov.hmrc.agentauthorisation.util.HttpAPIMonitor
-import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpReads, HttpResponse, SessionId}
-import uk.gov.hmrc.http.HeaderNames.authorisation
+import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpResponse, SessionId}
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.metrics.Metrics
@@ -57,14 +57,6 @@ class AgentsExternalStubsConnector @Inject() (
         HeaderCarrier(authorization = authorizationHeader, sessionId = sessionIdHeader)
       }
 
-  def createUser(user: User, affinityGroup: String)(using sessionHeaders: HeaderCarrier): Future[Unit] = {
-    val uri = uri"$AgentsExternalStubsUri/users?affinityGroup=$affinityGroup"
-    http
-      .post(uri.toJavaUri.toURL)
-      .withBody(Json.toJson(user))
-      .execute[Unit]
-  }
-
   def getUserIdForNino(nino: String)(using sessionHeaders: HeaderCarrier): Future[String] = {
     val encodedNino = encodePathSegment(nino)
     val uri = uri"$AgentsExternalStubsUri/users/nino/$encodedNino"
@@ -89,26 +81,34 @@ class AgentsExternalStubsConnector @Inject() (
       }
   }
 
-  def getBusinessDetails(nino: Nino)(using sessionHeaders: HeaderCarrier): Future[Option[BusinessDetails]] =
-    getWithDesHeaders[BusinessDetails](
-      uri"$baseUrl/registration/business-details/nino/${encodePathSegment(nino.value)}"
-    )
-
-  def getVatCustomerInformation(vrn: Vrn)(using sessionHeaders: HeaderCarrier): Future[Option[VatCustomerInfo]] =
-    getWithDesHeaders[VatCustomerInfo](
-      uri"$baseUrl/vat/customer/vrn/${encodePathSegment(vrn.value)}/information"
-    )
-
-  private def getWithDesHeaders[T: HttpReads](url: Uri)(using sessionHeaders: HeaderCarrier): Future[Option[T]] =
+  def findEnrolmentKey(service: String, identifier: Identifier)(using
+    sessionHeaders: HeaderCarrier
+  ): Future[Option[EnrolmentKey]] =
     http
-      .get(url.toJavaUri.toURL)
-      .setHeader(
-        authorisation -> "Bearer 123",
-        "Environment" -> "test"
-      )
-      .execute[Option[T]]
+      .post(uri"$baseUrl/enrolment-store-proxy/enrolment-store/enrolments".toJavaUri.toURL)
+      .withBody(Json.obj("service" -> service, "knownFacts" -> Json.arr(Json.toJson(identifier))))
+      .execute[HttpResponse]
+      .map { response =>
+        if response.status == NO_CONTENT then None
+        else
+          response.json
+            .as[EnrolmentsFromKnownFactsResponse]
+            .enrolments
+            .headOption
+            .map(enrolment => EnrolmentKey(service, enrolment.identifiers))
+      }
 
   private def encodePathSegment(pathSegment: String): String =
     UriEncoding.encodePathSegment(pathSegment, StandardCharsets.UTF_8.name)
 
 }
+
+object AgentsExternalStubsConnector:
+  private case class IdentifiersAndVerifiers(identifiers: Seq[Identifier])
+  private object IdentifiersAndVerifiers:
+    given play.api.libs.json.Reads[IdentifiersAndVerifiers] =
+      (play.api.libs.json.__ \ "identifiers").read[Seq[Identifier]].map(IdentifiersAndVerifiers.apply)
+
+  private case class EnrolmentsFromKnownFactsResponse(enrolments: Seq[IdentifiersAndVerifiers])
+  private object EnrolmentsFromKnownFactsResponse:
+    given play.api.libs.json.Reads[EnrolmentsFromKnownFactsResponse] = Json.reads[EnrolmentsFromKnownFactsResponse]

@@ -17,25 +17,27 @@
 package stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
+import play.api.libs.json.Json
+import uk.gov.hmrc.agentauthorisation.models.Identifier
 
 trait AgentsExternalStubs {
   self: TestIdentifiers =>
 
   def givenITSAUserAuthenticatedInStubs(): Unit = {
     givenUserAuthenticatedInStubs("Alf")
-    givenClientEnrolmentExistsInStubs(s"HMRC-MTD-IT~MTDITID~${mtdItId.value}", userIdITSA)
+    givenClientEnrolmentExistsInStubs(s"HMRC-MTD-IT~MTDITID~$mtdItId", userIdITSA)
     givenUserAuthenticatedInStubs(userIdITSA)
   }
 
   def givenITSASuppUserAuthenticatedInStubs(): Unit = {
     givenUserAuthenticatedInStubs("Alf")
-    givenClientEnrolmentExistsInStubs(s"HMRC-MTD-IT~MTDITID~${mtdItId.value}", userIdITSA)
+    givenClientEnrolmentExistsInStubs(s"HMRC-MTD-IT~MTDITID~$mtdItId", userIdITSA)
     givenUserAuthenticatedInStubs(userIdITSA)
   }
 
   def givenVATUserAuthenticatedInStubs(): Unit = {
     givenUserAuthenticatedInStubs("Alf")
-    givenClientEnrolmentExistsInStubs(s"HMRC-MTD-VAT~VRN~${validVrn.value}", "VATClient001")
+    givenClientEnrolmentExistsInStubs(s"HMRC-MTD-VAT~VRN~$validVrn", "VATClient001")
     givenUserAuthenticatedInStubs("VATClient001")
   }
 
@@ -44,6 +46,64 @@ trait AgentsExternalStubs {
     givenClientEnrolmentExistsInStubs(s"HMRC-ABC-DEF~KEY~$invalidInvitationId", "UnsupportedClient001")
     givenUserAuthenticatedInStubs("UnsupportedClient001")
   }
+
+  def givenClientUserAuthenticatedInStubs(enrolmentKey: String, userId: String): Unit = {
+    givenUserAuthenticatedInStubs("Alf")
+    givenClientEnrolmentExistsInStubs(enrolmentKey, userId)
+    givenUserAuthenticatedInStubs(userId)
+  }
+
+  def givenNinoUserAuthenticatedInStubs(nino: String, userId: String): Unit = {
+    givenUserAuthenticatedInStubs("Alf")
+    givenUserIdForNino(nino, userId)
+    givenUserAuthenticatedInStubs(userId)
+  }
+
+  def givenEnrolmentExpansionInStubs(
+    service: String,
+    identifier: Identifier,
+    expandedIdentifiers: Seq[Identifier]
+  ): Unit =
+    stubFor(
+      post(urlEqualTo("/enrolment-store-proxy/enrolment-store/enrolments"))
+        .withRequestBody(
+          equalToJson(
+            Json.obj("service" -> service, "knownFacts" -> Json.arr(Json.toJson(identifier))).toString,
+            true,
+            true
+          )
+        )
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(
+              Json
+                .obj(
+                  "service" -> service,
+                  "enrolments" -> Json.arr(
+                    Json.obj(
+                      "identifiers" -> expandedIdentifiers,
+                      "verifiers"   -> Json.arr()
+                    )
+                  )
+                )
+                .toString
+            )
+        )
+    )
+
+  def givenNoEnrolmentExpansionInStubs(service: String, identifier: Identifier): Unit =
+    stubFor(
+      post(urlEqualTo("/enrolment-store-proxy/enrolment-store/enrolments"))
+        .withRequestBody(
+          equalToJson(
+            Json.obj("service" -> service, "knownFacts" -> Json.arr(Json.toJson(identifier))).toString,
+            true,
+            true
+          )
+        )
+        .willReturn(aResponse().withStatus(204))
+    )
 
   def givenUserAuthenticatedInStubs(userId: String): Unit = {
     stubFor(
@@ -90,7 +150,7 @@ trait AgentsExternalStubs {
     ()
   }
 
-  def givenUserIdForNino(nino: String): Unit = {
+  def givenUserIdForNino(nino: String, userId: String = userIdITSA): Unit = {
     stubFor(
       get(urlEqualTo(s"/agents-external-stubs/users/nino/$nino"))
         .willReturn(
@@ -106,7 +166,7 @@ trait AgentsExternalStubs {
         .willReturn(
           aResponse()
             .withStatus(200)
-            .withBody(s"""{"planetId": "hmrc", "userId": "$userIdITSA"}""")
+            .withBody(s"""{"planetId": "hmrc", "userId": "$userId"}""")
         )
     )
     ()
