@@ -19,9 +19,9 @@ package uk.gov.hmrc.agentauthorisation.models
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
-class ServiceSpec extends AnyWordSpecLike with Matchers:
+class ServiceSpec extends AnyWordSpecLike with Matchers {
 
-  "Service" should:
+  "Service" should {
     val expectedMappings = Seq(
       ("HMRC-MTD-IT", "HMRC-MTD-IT~MTDITID~ABCDEF123456789", false),
       ("HMRC-MTD-IT-SUPP", "HMRC-MTD-IT~MTDITID~ABCDEF123456789", false),
@@ -37,12 +37,16 @@ class ServiceSpec extends AnyWordSpecLike with Matchers:
     )
 
     expectedMappings.foreach { case (serviceId, expectedEnrolmentKey, requiresExpansion) =>
-      s"map $serviceId to its client enrolment" in:
+      s"map $serviceId to its client enrolment" in {
         val service = Service.findById(serviceId).get
 
         service.enrolmentKey(expectedEnrolmentKey.split("~").last).toString.shouldBe(expectedEnrolmentKey)
         service.requiresEnrolmentExpansion.shouldBe(requiresExpansion)
+      }
     }
 
-    "not match an unsupported service" in:
+    "not match an unsupported service" in {
       Service.findById("HMRC-UNSUPPORTED").shouldBe(None)
+    }
+  }
+}
