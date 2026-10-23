@@ -45,12 +45,12 @@ trait ACRStubs {
 
   def givenItsaInvitationExists(status: String): StubMapping = givenInvitationExists(
     invitationIdITSA,
-    invitationJson(invitationIdITSA, status, serviceITSA, mtdItId.value, identifierITSA, "personal")
+    invitationJson(invitationIdITSA, status, serviceITSA, mtdItId, identifierITSA, "personal")
   )
 
   def givenItsaSuppInvitationExists(status: String): StubMapping = givenInvitationExists(
     invitationIdITSA,
-    invitationJson(invitationIdITSA, status, serviceITSASupp, mtdItId.value, identifierITSA, "personal")
+    invitationJson(invitationIdITSA, status, serviceITSASupp, mtdItId, identifierITSA, "personal")
   )
 
   def givenAltItsaInvitationExists(status: String): StubMapping = givenInvitationExists(
@@ -65,13 +65,26 @@ trait ACRStubs {
 
   def givenVatInvitationExists(status: String): StubMapping = givenInvitationExists(
     invitationIdVAT,
-    invitationJson(invitationIdVAT, status, serviceVAT, validVrn.value, identifierVAT, "business")
+    invitationJson(invitationIdVAT, status, serviceVAT, validVrn, identifierVAT, "business")
   )
 
   def givenUnsupportedInvitationExists: StubMapping = givenInvitationExists(
     invalidInvitationId,
     invitationJson(invalidInvitationId, "Pending", unsupportedService, "ABC", "ABC", "business")
   )
+
+  def givenInvitationExists(
+    invitationId: String,
+    status: String,
+    service: String,
+    suppliedClientId: String,
+    suppliedClientIdType: String,
+    clientType: String = "business"
+  ): StubMapping =
+    givenInvitationExists(
+      invitationId,
+      invitationJson(invitationId, status, service, suppliedClientId, suppliedClientIdType, clientType)
+    )
 
   private def givenInvitationExists(invitationId: String, invitationJson: JsValue): StubMapping =
     stubFor(
