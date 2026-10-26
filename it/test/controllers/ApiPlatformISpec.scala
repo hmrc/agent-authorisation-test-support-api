@@ -69,7 +69,7 @@ class ApiPlatformISpec
       (definition \ "api" \ "categories").as[Seq[String]] should contain("AGENTS")
 
       val accessConfig = definition \ "api" \ "versions" \\ "access"
-      (accessConfig.head \ "type").as[String] shouldBe "PUBLIC"
+      accessConfig.head.as[String] shouldBe "PUBLIC"
     }
   }
 

@@ -1,5 +1,4 @@
 @import uk.gov.hmrc.agentauthorisation.controllers.api.ApiAccess
-@import play.api.libs.json.Json
 
 @(access: ApiAccess)
 {
@@ -16,7 +15,7 @@
         "version": "1.0",
         "status": "BETA",
         "endpointsEnabled": true,
-        "access": @Json.toJson(access)
+        "access": "@{access.`type`}"
       }
     ]
   }
