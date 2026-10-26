@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentauthorisation.controllers
 
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import uk.gov.hmrc.agentauthorisation.connectors.{AgentClientRelationshipsConnector, AgentsExternalStubsConnector}
-import uk.gov.hmrc.agentauthorisation.models.Invitation
+import uk.gov.hmrc.agentauthorisation.models.{Identifier, Invitation, Service}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -42,10 +42,10 @@ class InvitationsController @Inject() (
                   case None => Future.successful(NotFound)
                   case Some(invitation) =>
                     invitation.status match {
-                      case "Pending"              => acceptPendingInvitation(invitation, sessionHeaders)
-                      case "Rejected" | "Expired" => Future.successful(Conflict)
-                      case "Accepted"             => Future.successful(NoContent)
-                      case _                      => Future.successful(Forbidden)
+                      case "Pending" => acceptPendingInvitation(invitation, sessionHeaders)
+                      case "Rejected" | "Expired" | "Cancelled" | "Partialauth" => Future.successful(Conflict)
+                      case "Accepted"                                           => Future.successful(NoContent)
+                      case _                                                    => Future.successful(Forbidden)
                     }
                 }
     } yield result
@@ -58,10 +58,10 @@ class InvitationsController @Inject() (
                   case None => Future.successful(NotFound)
                   case Some(invitation) =>
                     invitation.status match {
-                      case "Pending"              => rejectPendingInvitation(invitation, sessionHeaders)
-                      case "Accepted" | "Expired" => Future.successful(Conflict)
-                      case "Rejected"             => Future.successful(NoContent)
-                      case _                      => Future.successful(Forbidden)
+                      case "Pending" => rejectPendingInvitation(invitation, sessionHeaders)
+                      case "Accepted" | "Expired" | "Cancelled" | "Partialauth" => Future.successful(Conflict)
+                      case "Rejected"                                           => Future.successful(NoContent)
+                      case _                                                    => Future.successful(Forbidden)
                     }
                 }
     } yield result
@@ -98,16 +98,27 @@ class InvitationsController @Inject() (
         )
     }
 
-  private def enrolmentKeyFor(invitation: Invitation): String = invitation.service match {
-    case "HMRC-MTD-VAT"     => s"HMRC-MTD-VAT~VRN~${invitation.suppliedClientId}"
-    case "HMRC-MTD-IT"      => s"HMRC-MTD-IT~MTDITID~${invitation.suppliedClientId}"
-    case "HMRC-MTD-IT-SUPP" => s"HMRC-MTD-IT~MTDITID~${invitation.suppliedClientId}"
-    case _                  => throw new Exception("Unsupported service type")
-  }
+  private def serviceFor(invitation: Invitation): Service =
+    Service.findById(invitation.service).getOrElse(throw new Exception("Unsupported service type"))
+
+  private def enrolmentKeyFor(invitation: Invitation): String =
+    serviceFor(invitation).enrolmentKey(invitation.suppliedClientId).toString
 
   private def getUserId(invitation: Invitation)(using sessionHeaders: HeaderCarrier): Future[String] =
     invitation.suppliedClientIdType match {
       case "ni" => agentsExternalStubsConnector.getUserIdForNino(invitation.suppliedClientId)
-      case _    => agentsExternalStubsConnector.getUserIdForEnrolment(enrolmentKeyFor(invitation))
+      case _ =>
+        val service = serviceFor(invitation)
+        if service.requiresEnrolmentExpansion then
+          agentsExternalStubsConnector
+            .findEnrolmentKey(
+              service.enrolmentService,
+              Identifier(service.enrolmentIdentifier, invitation.suppliedClientId)
+            )
+            .flatMap {
+              case Some(enrolmentKey) => agentsExternalStubsConnector.getUserIdForEnrolment(enrolmentKey.toString)
+              case None               => Future.failed(new Exception("Client enrolment not found"))
+            }
+        else agentsExternalStubsConnector.getUserIdForEnrolment(enrolmentKeyFor(invitation))
     }
 }

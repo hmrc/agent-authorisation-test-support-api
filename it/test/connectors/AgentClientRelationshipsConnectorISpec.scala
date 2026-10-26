@@ -32,7 +32,7 @@ class AgentClientRelationshipsConnectorISpec extends BaseISpec with ACRStubs wit
     invitationIdITSA,
     arn,
     "personal",
-    mtdItId.value,
+    mtdItId,
     identifierITSA,
     serviceITSA,
     "Pending"
@@ -46,7 +46,7 @@ class AgentClientRelationshipsConnectorISpec extends BaseISpec with ACRStubs wit
     invitationIdVAT,
     arn,
     "business",
-    validVrn.value,
+    validVrn,
     identifierVAT,
     serviceVAT,
     "Pending"

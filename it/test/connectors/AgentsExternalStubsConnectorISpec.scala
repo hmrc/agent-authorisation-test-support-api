@@ -19,6 +19,7 @@ package connectors
 import stubs.{AgentsExternalStubs, TestIdentifiers}
 import support.BaseISpec
 import uk.gov.hmrc.agentauthorisation.connectors.AgentsExternalStubsConnector
+import uk.gov.hmrc.agentauthorisation.models.Identifier
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, SessionId}
 
 class AgentsExternalStubsConnectorISpec extends BaseISpec with AgentsExternalStubs with TestIdentifiers {
@@ -56,7 +57,7 @@ class AgentsExternalStubsConnectorISpec extends BaseISpec with AgentsExternalStu
 
     "return the userId for a given ITSA enrolment key" in {
       givenAuditConnector()
-      val enrolmentKey = s"HMRC-MTD-IT~MTDITID~${mtdItId.value}"
+      val enrolmentKey = s"HMRC-MTD-IT~MTDITID~$mtdItId"
       givenClientEnrolmentExistsInStubs(enrolmentKey, userIdITSA)
       val session =
         HeaderCarrier(
@@ -70,7 +71,7 @@ class AgentsExternalStubsConnectorISpec extends BaseISpec with AgentsExternalStu
 
     "return the userId for a given VAT enrolment key" in {
       givenAuditConnector()
-      val enrolmentKey = s"HMRC-MTD-VAT~VRN~${validVrn.value}"
+      val enrolmentKey = s"HMRC-MTD-VAT~VRN~$validVrn"
       givenClientEnrolmentExistsInStubs(enrolmentKey, "VATClient001")
       val session =
         HeaderCarrier(
@@ -80,6 +81,37 @@ class AgentsExternalStubsConnectorISpec extends BaseISpec with AgentsExternalStu
       val result = connector.getUserIdForEnrolment(enrolmentKey)(using session).futureValue
 
       result.shouldBe("VATClient001")
+    }
+  }
+
+  "findEnrolmentKey" should {
+
+    "expand a CBC ID into the full multi-identifier enrolment key" in {
+      givenAuditConnector()
+      val cbcIdentifier = Identifier("cbcId", cbcId)
+      givenEnrolmentExpansionInStubs(
+        "HMRC-CBC-ORG",
+        cbcIdentifier,
+        Seq(cbcIdentifier, Identifier("UTR", cbcUtr))
+      )
+      val session =
+        HeaderCarrier(authorization = Some(Authorization("Bearer FOO-Alf")), sessionId = Some(SessionId("BAR-Alf")))
+
+      val result = connector.findEnrolmentKey("HMRC-CBC-ORG", cbcIdentifier)(using session).futureValue
+
+      result.map(_.toString) shouldBe Some(s"HMRC-CBC-ORG~cbcId~$cbcId~UTR~$cbcUtr")
+    }
+
+    "return None when no matching enrolment exists" in {
+      givenAuditConnector()
+      val cbcIdentifier = Identifier("cbcId", cbcId)
+      givenNoEnrolmentExpansionInStubs("HMRC-CBC-ORG", cbcIdentifier)
+      val session =
+        HeaderCarrier(authorization = Some(Authorization("Bearer FOO-Alf")), sessionId = Some(SessionId("BAR-Alf")))
+
+      val result = connector.findEnrolmentKey("HMRC-CBC-ORG", cbcIdentifier)(using session).futureValue
+
+      result shouldBe None
     }
   }
 }
