@@ -19,7 +19,7 @@ The Agent Authorisation Test Support API provides test-only ability to accept or
 | Content-Length | number | An empty PUT body must have this header value set to 0 | true | 0  |
 
 ### Response code: 204
-Invitation has been accepted
+Invitation has been accepted or was already accepted
 
 ### Response code: 400
 
@@ -46,6 +46,9 @@ Invitation has been accepted
 ### Response code: 404
 Invitation not found for the given id
 
+### Response code: 403
+The invitation cannot be accepted in its current state or the client is not authorised
+
 ### Response code: 406
 
 #### errorResponse (application/json) 
@@ -69,7 +72,7 @@ Invitation not found for the given id
 | code |  string |  | true |  |
 
 ### Response code: 409
-Invitation already has been rejected or expired
+Invitation has already been rejected, has expired, has been cancelled or has partial authorisation
 
 ---
 #### **DELETE**:
@@ -81,7 +84,7 @@ Invitation already has been rejected or expired
 | Accept | string | Specifies the response format and the [version](/api-documentation/docs/reference-guide#versioning) of the API to be used. | true | ``` application/vnd.hmrc.1.0+json ```  |
 
 ### Response code: 204
-Invitation has been rejected.
+Invitation has been rejected or was already rejected
 
 ### Response code: 400
 
@@ -108,6 +111,9 @@ Invitation has been rejected.
 ### Response code: 404
 Invitation not found for the given id
 
+### Response code: 403
+The invitation cannot be rejected in its current state or the client is not authorised
+
 ### Response code: 406
 
 #### errorResponse (application/json) 
@@ -131,7 +137,6 @@ Invitation not found for the given id
 | code |  string |  | true |  |
 
 ### Response code: 409
-Invitation already has been accepted or expired
+Invitation has already been accepted, has expired, has been cancelled or has partial authorisation
 
 ---
-

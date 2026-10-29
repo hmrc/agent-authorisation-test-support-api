@@ -26,7 +26,7 @@ paths:
         - {}
       responses:
         '204':
-          description: Success - invitation has been accepted
+          description: Success - invitation has been accepted or was already accepted
           headers: {}
           content: {}
         '404':
@@ -34,7 +34,11 @@ paths:
           headers: {}
           content: {}
         '409':
-          description: Invitation has already been rejected or it has expired
+          description: Invitation has already been rejected, has expired, has been cancelled or has partial authorisation
+          headers: {}
+          content: {}
+        '403':
+          description: The invitation cannot be accepted in its current state or the client is not authorised
           headers: {}
           content: {}
         '400':
@@ -80,7 +84,7 @@ paths:
         - { }
       responses:
         '204':
-          description: Success - invitation has been rejected
+          description: Success - invitation has been rejected or was already rejected
           headers: {}
           content: {}
         '404':
@@ -88,7 +92,11 @@ paths:
           headers: {}
           content: {}
         '409':
-          description: Invitation has already been rejected or it has expired
+          description: Invitation has already been accepted, has expired, has been cancelled or has partial authorisation
+          headers: {}
+          content: {}
+        '403':
+          description: The invitation cannot be rejected in its current state or the client is not authorised
           headers: {}
           content: {}
         '400':
